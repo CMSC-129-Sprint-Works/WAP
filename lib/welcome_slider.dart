@@ -9,7 +9,7 @@ class WelcomeSliderPage extends StatefulWidget {
 }
 
 class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
-  List<Slide> slides = new List();
+  List<Slide> slides = [];
 
   @override
   void initState() {
@@ -18,7 +18,7 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
       new Slide(
         title: "Welcome to WAP App",
         description:
-            "Hello there! I am pleased to meet you and excited for you to meet loving pets."
+            "Hello there! We are pleased to meet you and excited for you to meet loving pets."
             '\n'
             "But first let us learn about our WAP vision and mission",
         pathImage: "assets/images/wap_logo.png",
@@ -29,7 +29,7 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
         title: "Mission",
         description:
             "WAP Application aims to create a virtual community that ensures the protection and welfare of cats and dogs by helping them find secure and responsible adoptive homes.",
-        pathImage: "assets/images/wap_logo.png",
+        pathImage: "assets/images/4.png",
       ),
     );
     slides.add(
@@ -37,13 +37,14 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
         title: "Vision",
         description:
             "Imagine a world in which every single pet can have the best protection and welfare that they deserve. That’s our commitment.",
-        pathImage: "assets/images/wap_logo.png",
+        pathImage: "assets/images/5.png",
       ),
     );
   }
 
   List<Widget> renderListCustomTabs() {
-    List<Widget> tabs = new List();
+    List<Widget> tabs = [];
+
     for (int i = 0; i < slides.length; i++) {
       Slide currentSlide = slides[i];
       tabs.add(
@@ -65,13 +66,20 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
                   child: Image.asset(
                     currentSlide.pathImage,
                     matchTextDirection: true,
-                    height: 100,
+                    fit: BoxFit.fill,
+                    height: 150,
                   ),
+                ),
+                SizedBox(
+                  height: 10,
                 ),
                 Container(
                   child: Text(
                     currentSlide.title,
-                    style: TextStyle(color: Colors.white, fontSize: 25),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 35,
+                        fontFamily: 'Fredoka One'),
                   ),
                 ),
                 Container(
@@ -82,8 +90,9 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
                     currentSlide.description,
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 20,
                       height: 1.5,
+                      fontFamily: 'Montserrat',
                     ),
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.clip,
@@ -106,7 +115,7 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
   @override
   Widget build(BuildContext context) {
     return IntroSlider(
-      backgroundColorAllSlides: Colors.teal[500],
+      backgroundColorAllSlides: Colors.teal[400],
       renderSkipBtn: Text("Skip"),
       renderNextBtn: Text(
         "Next",
