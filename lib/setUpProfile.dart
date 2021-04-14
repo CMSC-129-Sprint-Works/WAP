@@ -1,21 +1,65 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wap/profilepage.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
+import 'dart:async';
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
-import 'package:wap/TermsAndConditions.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:wap/database.dart';
 
-class RegisterPage extends StatefulWidget {
+class SetupProfilePage extends StatefulWidget {
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  _SetupProfilePageState createState() => _SetupProfilePageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  TextEditingController _newusernameController = TextEditingController();
-  TextEditingController _newemailController = TextEditingController();
-  TextEditingController _newpasswordController = TextEditingController();
-  TextEditingController _confirmpasswordController = TextEditingController();
-  bool accepted = false;
-  bool usernameTaken = false;
-  bool emailTaken = false;
-  String pssword;
+class _SetupProfilePageState extends State<SetupProfilePage> {
+  TextEditingController _descriptionController = TextEditingController();
+  TextEditingController _nicknameController = TextEditingController();
+  TextEditingController _addressController = TextEditingController();
+  TextEditingController _phoneNumberController = TextEditingController();
   final _key = GlobalKey<FormState>();
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final picker = ImagePicker();
+  var fileName = "Upload Profile Picture";
+
+  var _imageFile;
+  PickedFile image;
+
+  uploadImage(BuildContext context) async {
+    PickedFile image = await picker.getImage(source: ImageSource.gallery);
+    if (image != null) {
+      _imageFile = new File(image.path);
+      fileName = auth.currentUser.uid;
+      return fileName;
+    } else {
+      return "Upload Profile Picture";
+    }
+  }
+
+  updatePicture() async {
+    Reference storageReference =
+        FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
+    final UploadTask uploadTask = storageReference.putFile(_imageFile);
+    final TaskSnapshot downloadUrl = (await uploadTask);
+    final String url = await downloadUrl.ref.getDownloadURL();
+  }
+
+  Future updateProfile(BuildContext context) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    User user = auth.currentUser;
+    if (_imageFile != null) {
+      await updatePicture();
+    }
+    await DatabaseService(uid: user.uid).updateUserInfo1(
+        _nicknameController.text,
+        _addressController.text,
+        _phoneNumberController.text,
+        _descriptionController.text);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ProfilePage()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +92,7 @@ class _RegisterPageState extends State<RegisterPage> {
         width: double.infinity,
         child: Column(children: <Widget>[
           Text(
-            'Register an Account',
+            'Set Up Profile',
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Fredoka One',
@@ -56,9 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 20),
-          buildForm(),
-          SizedBox(height: 20),
-          readTC(),
+          buildForm(context),
           SizedBox(height: 20),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 100),
@@ -67,16 +109,16 @@ class _RegisterPageState extends State<RegisterPage> {
               child: MaterialButton(
                 minWidth: double.infinity,
                 height: 50,
-                onPressed: () {
+                onPressed: () async {
                   if (_key.currentState.validate()) {
-                    print("OK");
+                    updateProfile(context);
                   }
                 },
                 color: Colors.teal[100],
                 elevation: 5,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50)),
-                child: Text("Register",
+                child: Text("Submit",
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
@@ -84,12 +126,23 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ),
+          TextButton(
+              onPressed: () async {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ProfilePage()));
+              },
+              child: Text("Skip",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Montserrat',
+                      decoration: TextDecoration.underline)))
         ]),
       ),
     );
   }
 
-  Widget buildForm() {
+  @override
+  Widget buildForm(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -102,14 +155,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   //USERNAME
                   validator: (value) {
                     if (value.isEmpty) {
-                      return "Username is required";
-                    } else if (usernameTaken) {
-                      return "Username is already used";
+                      return "This field is required";
                     } else {
                       return null;
                     }
                   },
-                  controller: _newusernameController,
+                  controller: _nicknameController,
                   style: TextStyle(
                     color: Colors.black87,
                     fontFamily: 'Montserrat',
@@ -120,27 +171,24 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Username',
+                    hintText: 'Nickname',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    prefixIcon: Icon(Icons.person, color: Colors.white),
+                    prefixIcon: Icon(Icons.person_rounded, color: Colors.white),
                   ),
                 ),
                 SizedBox(height: 10),
                 TextFormField(
-                  //EMAIL
                   validator: (value) {
                     if (value.isEmpty) {
-                      return "Email is required";
-                    } else if (emailTaken) {
-                      return "Email is already used";
+                      return "This field is required";
                     } else {
                       return null;
                     }
                   },
-                  controller: _newemailController,
+                  controller: _addressController,
                   style: TextStyle(
                     color: Colors.black87,
                     fontFamily: 'Montserrat',
@@ -151,28 +199,24 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Email',
+                    hintText: 'Address',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    prefixIcon: Icon(Icons.email, color: Colors.white),
+                    prefixIcon: Icon(Icons.home_rounded, color: Colors.white),
                   ),
                 ),
                 SizedBox(height: 10),
                 TextFormField(
-                  //PASSWORD
                   validator: (value) {
                     if (value.isEmpty) {
-                      return "Password is required";
-                    } else if (value.length < 6) {
-                      return "Password should be at least 6 characters";
+                      return "This field is required";
                     } else {
                       return null;
                     }
                   },
-                  controller: _newpasswordController,
-                  obscureText: true,
+                  controller: _phoneNumberController,
                   style: TextStyle(
                     color: Colors.black87,
                     fontFamily: 'Montserrat',
@@ -183,29 +227,25 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Password',
+                    hintText: 'Contact Number',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    prefixIcon: Icon(Icons.lock, color: Colors.white),
+                    prefixIcon:
+                        Icon(Icons.contact_phone_rounded, color: Colors.white),
                   ),
                 ),
                 SizedBox(height: 10),
                 TextFormField(
-                  //CONFIRM PASSWORD
                   validator: (value) {
                     if (value.isEmpty) {
-                      return "Password is required";
-                    } else if (_newpasswordController.text !=
-                        _confirmpasswordController.text) {
-                      return "Password does not match";
+                      return "This field is required";
                     } else {
                       return null;
                     }
                   },
-                  obscureText: true,
-                  controller: _confirmpasswordController,
+                  controller: _descriptionController,
                   style: TextStyle(
                     color: Colors.black87,
                     fontFamily: 'Montserrat',
@@ -216,40 +256,54 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Confirm Password',
+                    hintText: 'Description',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    prefixIcon: Icon(Icons.lock, color: Colors.white),
+                    prefixIcon: Icon(Icons.article, color: Colors.white),
                   ),
                 ),
+                SizedBox(height: 20),
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      TextButton(
+                        style: ButtonStyle(),
+                        onPressed: () async {
+                          await uploadImage(context);
+                        },
+                        child: Container(
+                            padding: EdgeInsets.only(right: 15),
+                            alignment: Alignment.bottomLeft,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(5),
+                              child: _imageFile != null
+                                  ? Image.file(
+                                      _imageFile,
+                                      matchTextDirection: true,
+                                      fit: BoxFit.fill,
+                                      height: 45,
+                                    )
+                                  : Image.asset(
+                                      'assets/images/photo.png',
+                                      matchTextDirection: true,
+                                      fit: BoxFit.fill,
+                                      height: 45,
+                                    ),
+                            )),
+                      ),
+                      SizedBox(
+                          width: 160,
+                          child: Text(fileName,
+                              softWrap: false,
+                              overflow: TextOverflow.fade,
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Montserrat')))
+                    ]),
               ]),
             )),
-      ],
-    );
-  }
-
-  Widget readTC() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Text('By clicking Register, you accept the ',
-            style: TextStyle(fontFamily: 'Montserrat')),
-        TextButton(
-            onPressed: () {
-              showDialog(
-                barrierDismissible: true,
-                context: context,
-                builder: (BuildContext context) => TermsAndConditions(),
-              );
-            },
-            style: TextButton.styleFrom(primary: Colors.white),
-            child: Text('Terms and Conditions of WAP App',
-                style: TextStyle(
-                    fontFamily: 'Montserrat',
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold)))
       ],
     );
   }

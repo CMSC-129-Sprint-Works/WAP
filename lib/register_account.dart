@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wap/register_page.dart';
+import 'package:wap/register_page1.dart';
+import 'package:wap/register_page2.dart';
 
 class RegisterAccount extends StatefulWidget {
   @override
@@ -58,7 +59,8 @@ class _RegisterAccountState extends State<RegisterAccount> {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => RegisterPage())),
+                                  builder: (context) =>
+                                      PersonalRegisterPage())),
                           color: Colors.teal[100],
                           elevation: 10,
                           shape: RoundedRectangleBorder(
@@ -82,7 +84,8 @@ class _RegisterAccountState extends State<RegisterAccount> {
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => RegisterPage())),
+                                  builder: (context) =>
+                                      InstitutionRegisterPage())),
                           color: Colors.teal[100],
                           elevation: 10,
                           shape: RoundedRectangleBorder(

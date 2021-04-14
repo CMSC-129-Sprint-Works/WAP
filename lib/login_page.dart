@@ -1,10 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/homePage.dart';
 import 'dart:async';
-import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/register_account.dart';
+import 'package:wap/profilepage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -14,6 +13,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
+  TextEditingController _emailConfirmController = TextEditingController();
   bool _secureText = true;
   final _key = GlobalKey<FormState>();
 
@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => ProfilePage(), //HomePage(),
           ));
     } catch (e) {
       showDialog(
@@ -126,7 +126,9 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           child: Text(
                             "Forgot Password",
-                            style: TextStyle(fontFamily: 'Montserrat'),
+                            style: TextStyle(
+                                fontFamily: 'Montserrat',
+                                decoration: TextDecoration.underline),
                           ),
                           onPressed: () {
                             createPopUp(context);
@@ -139,7 +141,9 @@ class _LoginPageState extends State<LoginPage> {
                       TextButton(
                           style: TextButton.styleFrom(primary: Colors.white),
                           child: Text('Create an Account',
-                              style: TextStyle(fontFamily: 'Montserrat')),
+                              style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                  decoration: TextDecoration.underline)),
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -155,7 +159,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   createPopUp(BuildContext context) {
-    TextEditingController _emailController = TextEditingController();
     return showDialog(
       context: context,
       builder: (context) {
@@ -167,7 +170,96 @@ class _LoginPageState extends State<LoginPage> {
               clipBehavior: Clip.none,
               children: <Widget>[
                 Container(
-                  height: MediaQuery.of(context).size.height / 3,
+                  height: MediaQuery.of(context).size.height / 4,
+                  width: MediaQuery.of(context).size.width / 1.2,
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(height: 50),
+                        TextFormField(
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return "Email is required";
+                            } else {
+                              return null;
+                            }
+                          },
+                          controller: _emailConfirmController,
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide:
+                                    BorderSide(color: Colors.teal[200])),
+                            fillColor: Colors.teal[300],
+                            filled: true,
+                            hintText: 'Enter your email',
+                            hintStyle: TextStyle(
+                                color: Colors.black38,
+                                fontFamily: 'Montserrat'),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Send reset link",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  createConfirm(context);
+                                }),
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Done",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                }),
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                    top: -50,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.teal[200],
+                      radius: 50,
+                      child: ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(50)),
+                          child: Image.asset('assets/images/confused.png')),
+                    ))
+              ]),
+        );
+      },
+      barrierDismissible: true,
+    );
+  }
+
+  createConfirm(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          child: Stack(
+              alignment: Alignment.topCenter,
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                Container(
+                  height: MediaQuery.of(context).size.height / 4,
                   width: MediaQuery.of(context).size.width / 1.2,
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -176,30 +268,15 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         SizedBox(height: 50),
                         Text(
-                            'Enter your email address and we will send you a password reset link.'),
-                        SizedBox(height: 10),
-                        TextField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide:
-                                    BorderSide(color: Colors.teal[200])),
-                            fillColor: Colors.teal[300],
-                            filled: true,
-                            hintText: 'Email',
-                            hintStyle: TextStyle(
-                                color: Colors.black38,
-                                fontFamily: 'Montserrat'),
-                          ),
-                        ),
-                        SizedBox(height: 10),
+                            "A password reset link is already sent to your email.",
+                            style: TextStyle(fontFamily: 'Montserrat')),
+                        SizedBox(height: 20),
                         MaterialButton(
                             color: Colors.teal[100],
                             elevation: 5,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(100)),
-                            child: Text("Send reset link",
+                            child: Text("Done",
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             onPressed: () {
                               Navigator.pop(context);
@@ -215,7 +292,7 @@ class _LoginPageState extends State<LoginPage> {
                       radius: 50,
                       child: ClipRRect(
                           borderRadius: BorderRadius.all(Radius.circular(50)),
-                          child: Image.asset('assets/images/confused.png')),
+                          child: Image.asset('assets/images/wap_logo.png')),
                     ))
               ]),
         );
