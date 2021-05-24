@@ -11,6 +11,7 @@ jobs:
   buildJDK:
 
 #set up a JDK version
+      - uses: actions/checkout@v2
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
