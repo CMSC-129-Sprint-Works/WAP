@@ -20,3 +20,23 @@ jobs:
       with:
         java-version: '12.X'
         distribution: 'adopt'
+#set up flutter
+  buildFlutter:
+    runs-on: ubuntu-latest
+    env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+    defaults:
+      run: 
+        working-directory: /home/runner/work/Minions-CI/Minions-CI/ios/Flutter
+    steps:
+       - name: Installing Flutter
+         uses: britannio/action-install-flutter@v1.0
+         with:
+          version: $FLUTTER_VERSION
+       #- run: echo $PATH
+          run: where flutter 
+       
+       #- name: Installing dependencies
+        # run: flutter pub get
+      # - name: Running tests
+       #  run: flutter test --no-pub
