@@ -1,45 +1,115 @@
-name: CI Workflow
+name: Flutter Worklow
+env:
+  FLUTTER_VERSION: "stable"
+
 on:
   push:
-    paths:
-      - '.github/workflows/**'
+    branches: [ main ]
   pull_request:
-    branches: [develop]
-    paths:
-      - '.github/workflows/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - 'lib/**'
-      - 'ios/**'
-      - 'android/**'
+    branches: [ main ]
 jobs:
-  buildios:
-    name: Build iOS
-    runs-on: macos-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-    steps:
-      - uses: actions/checkout@v2
+  build:
+
+#set up a JDK version
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
-      - run: git clone https://github.com/flutter/flutter.git --depth 1 -b v1.15.17 _flutter
-      - run: echo "::add-path::$GITHUB_WORKSPACE/_flutter/bin"
-      - run: flutter pub get
-        working-directory: ./
-      - run: flutter build ios --no-codesign
-  buildandroid:
-    name: Build Android
-    runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v1
+    
+#set up flutter
+      - name: Installing Flutter
+      - uses: subosito/flutter-action@v1
         with:
-          java-version: '12.x'
-      - run: git clone https://github.com/flutter/flutter.git --depth 1 -b v1.15.17 _flutter
-      - run: echo "::add-path::$GITHUB_WORKSPACE/_flutter/bin"
-      - run: flutter pub get
-        working-directory: ./
-      - run: flutter build appbundle
+          flutter-version: '2.0.5
+
+       - name: npm install, and test
+        run: 
+          npm install
+          npm test
+       
+        run: flutter pub get
+      #- name: Running tests
+        run: flutter test --no-pub
+        
+      
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: dist
+          path: dist
+             
+      
+        
+      - name: Installing Flutter
+        uses: britannio/action-install-flutter@v1.0
+        with:
+          version: $FLUTTER_VERSION
+          
+      #- name: Installing dependencies
+        #run: flutter pub get
+      #- name: Running tests
+       # run: flutter test --no-pub
+    
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      
+          
+      #runs unit tests located in the project.  (- name: Assemble app debug APK)  
+      #- name: Run Unit tests
+       # run: bash ./gradlew test --stacktrace
+        #env:
+         #   WAP_API_KEY: ${{ secrets.WAP_API_KEY }}
+        
+      - name: Upload Android Test APK
+        uses: actions/upload-artifact@v1
+        with:
+         name: app-debug-androidTest
+         path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk   
+         
+     
+  
+
+
+firebase:
+    name: Run UI tests with Firebase Test Lab
+    #needs: apk  #Dapat na build na daan tong APK above but naa may error due to ./gradlew nga file
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download app APK  #download all the artifacts we generated in the previous step
+        uses: actions/download-artifact@v1
+        with:
+          name: app-debug
+      - name: Download Android test APK
+        uses: actions/download-artifact@v1
+        with:
+          name: app-debug-androidTest
+
+      #install the Cloud SDK on the machine running the tests
+ 
+
+
+
+- name: Login to Google Cloud
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with: 
+          version: '290.0.1'
+          service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY}}
+          export_default_credentials: true
+      - run: gcloud info
+      
+  
+
+      - name: Set current project
+        run: gcloud config set project ${{ secrets.waplogin-469a3}}
+      - name: Run Instrumentation Tests in Firebase Test Lab
+        run: gcloud firebase test android run --type instrumentation --app app-debug/app-debug.apk --test app-debug-androidTest/app-debug-androidTest.apk --device model=Pixel2,version=28,locale=pl,orientation=portrait
+
+       env:
+          CI: true
+
+
+
+
+
+
+
+
