@@ -107,6 +107,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    //register page for institutional account
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal,

@@ -61,6 +61,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    //Setup profile page for personal account
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal,

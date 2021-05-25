@@ -104,7 +104,7 @@ class _AddPostPageState extends State<AddPostPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
+      //Add new post
       appBar: AppBar(
         backgroundColor: Colors.teal[100],
         centerTitle: true,

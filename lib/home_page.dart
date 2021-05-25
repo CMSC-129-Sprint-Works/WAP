@@ -111,6 +111,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    //display homepage
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal[100],

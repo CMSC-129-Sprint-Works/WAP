@@ -242,6 +242,7 @@ class DatabaseService {
     }
   }
 
+  //to get data about pets
   getPets() async {
     final storageReference = await FirebaseStorage.instance.ref();
     String petID;

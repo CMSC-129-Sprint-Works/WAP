@@ -66,6 +66,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    //display pet profile
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal[100],

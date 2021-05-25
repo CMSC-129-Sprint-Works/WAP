@@ -104,6 +104,7 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    //display search page
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(

@@ -117,6 +117,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    //register page for personal account
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal,

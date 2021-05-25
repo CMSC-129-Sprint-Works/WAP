@@ -157,6 +157,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    //display profile of other user
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(

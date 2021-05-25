@@ -106,7 +106,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //to edit profile pic, name, username, and bio
+      //to edit profile pic, name, username, and bio of user
       appBar: AppBar(
         elevation: 1,
         backgroundColor: Colors.teal[100],

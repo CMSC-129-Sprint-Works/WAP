@@ -83,7 +83,7 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       //to add pet name, ages, sex, breed, characteristics
-      //medical history, special needs, and other important info about the pet
+      //medical history, special needs, and short description about the pet
       appBar: AppBar(
         elevation: 1,
         backgroundColor: Colors.teal[100],

@@ -10,7 +10,6 @@ import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
 import 'package:wap/searchPage.dart';
 import 'package:wap/setupPetProfile.dart';
-import 'package:wap/images.dart';
 
 class ProfilePage extends StatefulWidget {
   @override

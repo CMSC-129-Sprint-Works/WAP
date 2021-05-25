@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+//classes for Posts and Pets
 class Post {
   dynamic userPic;
   final String userName;
