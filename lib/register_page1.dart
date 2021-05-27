@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:wap/regSuccess.dart';
 import 'package:wap/database.dart';
-import 'package:wap/TermsAndConditions.dart';
+
 
 class PersonalRegisterPage extends StatefulWidget {
   @override
