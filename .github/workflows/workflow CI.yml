@@ -39,16 +39,32 @@ jobs:
      runs-on: ubuntu-latest
 #runs unit tests located in the project.  (- name: Assemble app debug APK)  
      steps:
-        - name: Run Unit tests
-          run: bash ./gradlew test --stacktrace
-          env:
-            WAP_API_KEY: ${{ secrets.WAP_API_KEY }}
+       # - name: Run Unit tests
+        #  run: bash ./gradlew test --stacktrace
+         # env:
+          #  WAP_API_KEY: ${{ secrets.WAP_API_KEY }}
 
         - name: Upload Android Test APK
           uses: actions/upload-artifact@v1
           with:
             name: app-debug-androidTest
-            path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk   
+            path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk  
+            
+ buildFirebase:
+    runs-on: ubuntu-latest
+   
+        #needs: apk  #Dapat na build na daan tong APK above but naa may error due to ./gradlew nga file
+        
+    steps:
+      - uses: actions/checkout@v1
+      - name: Download app APK  #download all the artifacts we generated in the previous step
+        uses: actions/download-artifact@v1
+        with:
+          name: app-debug
+      - name: Download Android test APK
+        uses: actions/download-artifact@v1
+        with:
+          name: app-debug-androidTest
 
      
   
