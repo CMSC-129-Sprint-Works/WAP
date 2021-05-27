@@ -7,9 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wap/database.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:wap/home_page.dart';
+import 'package:wap/profilepage.dart';
 
 class AddPostPage extends StatefulWidget {
+  final bool homePage;
+  const AddPostPage(this.homePage);
   @override
   _AddPostPageState createState() => _AddPostPageState();
 }
@@ -26,9 +30,12 @@ class _AddPostPageState extends State<AddPostPage> {
   PickedFile image;
   String thisname = "WAP USER";
   dynamic pic = AssetImage('assets/images/defaultPic.png');
+  bool uploading = false;
+
+  UploadTask uploadTask;
+  double _progress = 0;
 
   initState() {
-    super.initState();
     if (!mounted) {
       return;
     }
@@ -39,6 +46,8 @@ class _AddPostPageState extends State<AddPostPage> {
         postNum = value + 1;
       });
     });
+
+    super.initState();
   }
 
   getUserData() async {
@@ -87,24 +96,26 @@ class _AddPostPageState extends State<AddPostPage> {
     });
   }
 
-  updatePicture() async {
-    Reference storageReference =
-        FirebaseStorage.instance.ref().child("Posts/$fileName/$postNum");
-    final UploadTask uploadTask = storageReference.putFile(_imageFile);
-  }
-
   Future updateProfile() async {
     final dbGet = DatabaseService(uid: auth.currentUser.uid);
-    User user = auth.currentUser;
+
     if (_imageFile != null) {
-      await updatePicture().then({dbGet.addPost(_captionController.text)});
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child("Posts/$fileName/$postNum");
+      uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
+            dbGet.addPost(_captionController.text),
+            widget.homePage
+                ? Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomePage()))
+                : Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => ProfilePage()))
+          });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //Add new post
       appBar: AppBar(
         backgroundColor: Colors.teal[100],
         centerTitle: true,
@@ -197,41 +208,59 @@ class _AddPostPageState extends State<AddPostPage> {
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 50),
-                    child: MaterialButton(
-                      onPressed: () async {
-                        updateProfile();
-                        Navigator.pop(context);
-                      },
-                      minWidth: double.infinity,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50)),
-                      color: Colors.teal[400],
-                      child: Center(
-                        child: Text(
-                          'Upload Post',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: 'Montserrat',
-                            color: Colors.white,
+              !uploading
+                  ? Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          child: MaterialButton(
+                            onPressed: () async {
+                              updateProfile();
+                              setState(() {
+                                uploading = true;
+                              });
+                            },
+                            minWidth: double.infinity,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50)),
+                            color: Colors.teal[400],
+                            child: Center(
+                              child: Text(
+                                'Upload Post',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontFamily: 'Montserrat',
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 10,
-              ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 50),
+                          child: MaterialButton(
+                            onPressed: () async {},
+                            minWidth: double.infinity,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50)),
+                            color: Colors.teal[400],
+                            child: Center(
+                                child: SpinKitThreeBounce(
+                              color: Colors.white,
+                              size: 20.0,
+                            )),
+                          ),
+                        ),
+                      ],
+                    )
             ],
           ),
         ],
       ),
-      //bottomSheet: buildSticker(),
     );
   }
 

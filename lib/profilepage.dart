@@ -1,11 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wap/addPost.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wap/bookmarkPage.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/editprofile.dart';
 import 'package:wap/petprofilepage.dart';
-//import 'package:wap/petprofilepage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
 import 'package:wap/searchPage.dart';
@@ -34,10 +33,11 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isLoading = true;
   List<bool> _isChecked;
   List<dynamic> posts = [];
+  bool postLoading = true;
   List<dynamic> pets = [];
+  bool petLoading = true;
 
   initState() {
-    super.initState();
     if (!mounted) {
       return;
     }
@@ -47,6 +47,8 @@ class _ProfilePageState extends State<ProfilePage> {
         isLoading = false;
       });
     }, onError: (msg) {});
+
+    super.initState();
   }
 
   getUserData() async {
@@ -58,11 +60,13 @@ class _ProfilePageState extends State<ProfilePage> {
     dbGet.getPosts().then((value) async {
       setState(() {
         posts.addAll(value);
+        postLoading = false;
       });
     });
     dbGet.getPets().then((value) async {
       setState(() {
         pets.addAll(value);
+        petLoading = false;
       });
       print("pets: " + pets.length.toString());
       pets.isNotEmpty
@@ -172,8 +176,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ? FloatingActionButton(
                   backgroundColor: Colors.transparent,
                   onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => AddPostPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => AddPostPage(false)));
                   },
                   child: Image.asset('assets/images/postButton.png'),
                 )
@@ -265,31 +271,54 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 0, 28, 0),
-                  child: MaterialButton(
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => EditProfile(pic, firstname,
-                                  lastname, bio, address, nickname, contact)));
-                    },
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5)),
-                    color: Colors.teal[50],
-                    child: Center(
-                      child: Text(
-                        'Edit Profile',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Montserrat',
-                          color: Colors.teal,
+                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                  Expanded(
+                      //padding: const EdgeInsets.fromLTRB(28, 0, 0, 0),
+                      child: Padding(
+                    padding: EdgeInsets.only(left: 30, right: 20),
+                    child: MaterialButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => EditProfile(
+                                    pic,
+                                    firstname,
+                                    lastname,
+                                    bio,
+                                    address,
+                                    nickname,
+                                    contact)));
+                      },
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                      color: Colors.teal[50],
+                      child: Container(
+                        child: Text(
+                          'Edit Profile',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Montserrat',
+                            color: Colors.teal,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
+                  )),
+                  Container(
+                      padding: EdgeInsets.only(right: 30),
+                      child: IconButton(
+                          icon: Icon(
+                            Icons.bookmark,
+                            color: Colors.teal,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => BookmarkPage()));
+                          }))
+                ]),
                 SizedBox(height: 10),
                 Container(
                   height: 0.5,
@@ -386,20 +415,29 @@ class _ProfilePageState extends State<ProfilePage> {
                 IndexedStack(
                   index: selectedIndex,
                   children: [
-                    posts.isNotEmpty
-                        ? getPosts(size)
-                        : Padding(
-                            padding: const EdgeInsets.only(
-                                left: 60, right: 50, top: 200),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text("No Posts Available",
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 30)),
-                              ],
-                            ),
-                          ),
+                    postLoading
+                        ? Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(top: 50),
+                            child: CircularProgressIndicator(
+                                backgroundColor: Colors.white,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.teal[900])),
+                          )
+                        : posts.isNotEmpty
+                            ? getPosts(size)
+                            : Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 60, right: 50, top: 200),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text("No Posts Available",
+                                        style: TextStyle(
+                                            color: Colors.grey, fontSize: 30)),
+                                  ],
+                                ),
+                              ),
                     getPetList(size),
                     getAboutMe(),
                   ],
@@ -703,112 +741,125 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
-          pets.isNotEmpty
+          petLoading
               ? Container(
-                  height: size.height * 0.45,
-                  child: ListView.builder(
-                    controller: controller,
-                    itemCount: pets.length,
-                    physics: BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Container(
-                          height: 120,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black.withAlpha(100),
-                                    blurRadius: 10.0),
-                              ]),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15.0, vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Checkbox(
-                                    activeColor: Colors.teal,
-                                    checkColor: Colors.white,
-                                    value: _isChecked[index],
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        _isChecked[index] = value;
-                                      });
-                                    }),
-                                Container(
-                                  decoration:
-                                      BoxDecoration(shape: BoxShape.circle),
-                                  child: Image(
-                                    image: MemoryImage(pets[index].petPic),
-                                    height: double.infinity,
-                                  ),
+                  margin: EdgeInsets.only(top: 50),
+                  child: CircularProgressIndicator(
+                      backgroundColor: Colors.white,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.teal[900])),
+                )
+              : pets.isNotEmpty
+                  ? Container(
+                      height: size.height * 0.45,
+                      child: ListView.builder(
+                        controller: controller,
+                        itemCount: pets.length,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Container(
+                              height: 120,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withAlpha(100),
+                                        blurRadius: 10.0),
+                                  ]),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0, vertical: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Checkbox(
+                                        activeColor: Colors.teal,
+                                        checkColor: Colors.white,
+                                        value: _isChecked[index],
+                                        onChanged: (bool value) {
+                                          setState(() {
+                                            _isChecked[index] = value;
+                                          });
+                                        }),
+                                    Container(
+                                      decoration:
+                                          BoxDecoration(shape: BoxShape.circle),
+                                      child: Image(
+                                        image: MemoryImage(pets[index].petPic),
+                                        height: double.infinity,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          PetProfilePage(
+                                                            pet: pets[index],
+                                                            publicViewType:
+                                                                false,
+                                                          )));
+                                              print("pressed");
+                                            },
+                                            child: Text(pets[index].petName,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                    color: Colors.black,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'Montserrat')),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  pets[index].petBreed,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontFamily: 'Montserrat'),
+                                                ),
+                                                Text(
+                                                  pets[index].petSex,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontFamily: 'Montserrat'),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                                  ],
                                 ),
-                                Expanded(
-                                    child: Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      PetProfilePage(
-                                                          pet: pets[index])));
-                                          print("pressed");
-                                        },
-                                        child: Text(pets[index].petName,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                color: Colors.black,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Montserrat')),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 10),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              pets[index].petBreed,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontFamily: 'Montserrat'),
-                                            ),
-                                            Text(
-                                              pets[index].petSex,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontFamily: 'Montserrat'),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ));
-                    },
-                  ))
-              : SizedBox(height: 5),
+                              ));
+                        },
+                      ))
+                  : SizedBox(height: 5),
         ],
       ),
     );

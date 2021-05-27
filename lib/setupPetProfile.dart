@@ -1,9 +1,8 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:wap/database.dart';
-import 'package:wap/home_page.dart';
 import 'package:wap/profilepage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -28,6 +27,7 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
   final picker = ImagePicker();
   var fileName = "Upload Profile Picture";
   dynamic pic = AssetImage('assets/images/confused.png');
+  bool uploading = false;
 
   File _imageFile;
   PickedFile image;
@@ -48,10 +48,14 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
   }
 
   addPicture(var namefile) async {
+    String id = auth.currentUser.uid;
     fileName = namefile;
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Pet Profile Pictures/$fileName");
-    final UploadTask uploadTask = storageReference.putFile(_imageFile);
+    final uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
+          Navigator.pushReplacement(
+              context, MaterialPageRoute(builder: (context) => ProfilePage()))
+        });
   }
 
   Future createPet() async {
@@ -72,18 +76,13 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
     if (_imageFile != null) {
       await addPicture(temp);
     }
-
-    Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-            builder: (context) => HomePage())); //change to pet profile page
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       //to add pet name, ages, sex, breed, characteristics
-      //medical history, special needs, and short description about the pet
+      //medical history, special needs, and other important info about the pet
       appBar: AppBar(
         elevation: 1,
         backgroundColor: Colors.teal[100],
@@ -178,34 +177,63 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
                       children: [
                         buildForm(),
                         SizedBox(height: 30),
-                        Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 50),
-                              child: MaterialButton(
-                                onPressed: () {
-                                  if (_key.currentState.validate()) {
-                                    createPet();
-                                  }
-                                },
-                                minWidth: double.infinity,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50)),
-                                color: Colors.teal[400],
-                                child: Center(
-                                  child: Text(
-                                    'Done',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontFamily: 'Montserrat',
-                                      color: Colors.white,
+                        !uploading
+                            ? Column(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 50),
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        if (_key.currentState.validate()) {
+                                          _imageFile != null
+                                              ? setState(() {
+                                                  createPet();
+                                                  uploading = true;
+                                                })
+                                              : null;
+                                        }
+                                      },
+                                      minWidth: double.infinity,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                      color: Colors.teal[400],
+                                      child: Center(
+                                        child: Text(
+                                          'Upload Pet Profile',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontFamily: 'Montserrat',
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 50),
+                                    child: MaterialButton(
+                                      onPressed: () async {},
+                                      minWidth: double.infinity,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                      color: Colors.teal[400],
+                                      child: Center(
+                                          child: SpinKitThreeBounce(
+                                        color: Colors.white,
+                                        size: 20.0,
+                                      )),
+                                    ),
+                                  ),
+                                ],
+                              )
                       ],
                     ),
                   ),

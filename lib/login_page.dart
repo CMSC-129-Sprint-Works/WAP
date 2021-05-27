@@ -105,7 +105,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    //display login page
     return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.teal[400],

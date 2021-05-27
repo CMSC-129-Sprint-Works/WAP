@@ -18,6 +18,9 @@ class DatabaseService {
   final CollectionReference userpets =
       FirebaseFirestore.instance.collection('userpets');
 
+  final CollectionReference petlist =
+      FirebaseFirestore.instance.collection('pets');
+
   Future updateUser1(
       String username, String email, String fname, String lname) async {
     int count = 0;
@@ -92,7 +95,7 @@ class DatabaseService {
 
   addFollowing(String profileID) async {
     try {
-      final ud = await userslist.doc(uid).update({
+      return await userslist.doc(uid).update({
         'following': FieldValue.arrayUnion([profileID])
       });
     } catch (e) {
@@ -105,7 +108,7 @@ class DatabaseService {
     var val = [];
     val.add(profileID);
     try {
-      final ud = await userslist
+      return await userslist
           .doc(uid)
           .update({'following': FieldValue.arrayRemove(val)});
     } catch (e) {
@@ -129,10 +132,8 @@ class DatabaseService {
   }
 
   addPost(String caption) async {
-    String postNum;
     try {
       final ud = userposts.doc(uid);
-
       ud.update({'postcount': FieldValue.increment(1)});
       if (caption.isNotEmpty) {
         getUserPostsCount().then((value) {
@@ -165,7 +166,7 @@ class DatabaseService {
     try {
       ud.update({'petcount': FieldValue.increment(1)});
 
-      final petid = await userpets.doc(uid).collection('petlist');
+      final petid = userpets.doc(uid).collection('petlist');
       String returnval;
 
       await petid.add({
@@ -179,7 +180,19 @@ class DatabaseService {
         'medhis': medhis,
       }).then((DocumentReference doc) => returnval = doc.id);
 
+      await petlist.doc(returnval).set({'ownerID': uid});
       return returnval;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  addToBookmarks(String id) async {
+    try {
+      return await userslist.doc(uid).update({
+        'bookmarks': FieldValue.arrayUnion([id])
+      });
     } catch (e) {
       print(e.toString());
       return null;
@@ -242,9 +255,63 @@ class DatabaseService {
     }
   }
 
-  //to get data about pets
+  getBookmarks() async {
+    final storageReference = FirebaseStorage.instance.ref();
+    List<Pet> bookmarkedPets = [];
+    var list = [];
+
+    try {
+      final ud = await userslist.doc(uid).get();
+      var ud2;
+      var ud3;
+      String id;
+      Pet fetchedPet;
+      list = ud.get('bookmarks');
+
+      String name;
+      for (int i = 0; i < list.length; i++) {
+        ud2 = await petlist.doc(list[i]).get();
+        id = ud2.get('ownerID');
+        ud3 = await userpets.doc(id).collection('petlist').doc(list[i]).get();
+        name = list[i].toString();
+        fetchedPet = new Pet(
+            petID: list[i],
+            petPic: await storageReference
+                .child("Pet Profile Pictures/$name")
+                .getData(),
+            petName: ud3.get('name'),
+            petAge: ud3.get('age'),
+            petBreed: ud3.get('breed'),
+            petCharacteristics: ud3.get('charac'),
+            petMedHis: ud3.get('medhis'),
+            petNeeds: ud3.get('needs'),
+            petSex: ud3.get('sex'),
+            petOthers: ud3.get('others'));
+        bookmarkedPets.add(fetchedPet);
+      }
+
+      return bookmarkedPets;
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
+  removeBookmark(String id) async {
+    var val = [];
+    val.add(id);
+    try {
+      return await userslist
+          .doc(uid)
+          .update({'bookmarks': FieldValue.arrayRemove(val)});
+    } catch (e) {
+      print(e.toString());
+      return null;
+    }
+  }
+
   getPets() async {
-    final storageReference = await FirebaseStorage.instance.ref();
+    final storageReference = FirebaseStorage.instance.ref();
     String petID;
     List<Pet> pets = [];
     Pet fetchedPet;
@@ -421,8 +488,6 @@ class DatabaseService {
       return null;
     }
   }
-
-  //for first name and last name : return [firstname, lastname];
 }
 
 Future<bool> isUsernameAvailable(String username) async {

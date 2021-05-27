@@ -9,7 +9,6 @@ class WelcomeSliderPage extends StatefulWidget {
   _WelcomeSliderPageState createState() => _WelcomeSliderPageState();
 }
 
-//Displays vision and mission of WAP App
 class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
   List<Slide> slides = [];
 

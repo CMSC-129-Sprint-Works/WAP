@@ -31,7 +31,6 @@ class SplashState extends State<Splash> with AfterLayoutMixin<Splash> {
 
   @override
   Widget build(BuildContext context) {
-    //Display splash screen
     return Scaffold(
         backgroundColor: Colors.white,
         body: Center(

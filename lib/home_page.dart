@@ -1,15 +1,8 @@
-import 'dart:math';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:recase/recase.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wap/classtype.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/addPost.dart';
 import 'package:wap/database.dart';
-import 'package:flutter/material.dart';
-import 'package:wap/editprofile.dart';
 import 'package:wap/profilepage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/searchPage.dart';
@@ -24,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   String un = "WAP USER";
   String thisname = "WAP USER";
-
   dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool fetchedPosts = false;
   ScrollController controller = ScrollController();
@@ -111,7 +103,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    //display homepage
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal[100],
@@ -129,8 +120,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.transparent,
         onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AddPostPage()));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AddPostPage(true)));
         },
         child: Image.asset('assets/images/postButton.png'),
       ),

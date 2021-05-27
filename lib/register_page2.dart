@@ -24,7 +24,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
   final _key = GlobalKey<FormState>();
 
   _registerUser() async {
-    final docSnap = await FirebaseFirestore.instance
+    final docSnap = FirebaseFirestore.instance
         .collection('users')
         .where('username', isEqualTo: _newusernameController.text);
     await docSnap.get().then((value) async {
@@ -107,7 +107,6 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    //register page for institutional account
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal,

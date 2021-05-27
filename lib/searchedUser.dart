@@ -32,7 +32,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
   bool isLoading = true;
   bool following = true;
   List<dynamic> posts = [];
+  bool postLoading = true;
   List<dynamic> pets = [];
+  bool petLoading = true;
 
   initState() {
     super.initState();
@@ -52,11 +54,13 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     dbGet.getPosts().then((value) async {
       setState(() {
         posts.addAll(value);
+        postLoading = false;
       });
     });
     dbGet.getPets().then((value) async {
       setState(() {
         pets.addAll(value);
+        petLoading = false;
       });
       print("pets: " + pets.length.toString());
     });
@@ -157,7 +161,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    //display profile of other user
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -438,20 +441,29 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                 IndexedStack(
                   index: selectedIndex,
                   children: [
-                    posts.isNotEmpty
-                        ? getPosts(size)
-                        : Padding(
-                            padding: const EdgeInsets.only(
-                                left: 60, right: 50, top: 200),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text("No Posts Available",
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 30)),
-                              ],
-                            ),
-                          ),
+                    postLoading
+                        ? Container(
+                            alignment: Alignment.center,
+                            margin: EdgeInsets.only(top: 50),
+                            child: CircularProgressIndicator(
+                                backgroundColor: Colors.white,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.teal[900])),
+                          )
+                        : posts.isNotEmpty
+                            ? getPosts(size)
+                            : Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 60, right: 50, top: 200),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text("No Posts Available",
+                                        style: TextStyle(
+                                            color: Colors.grey, fontSize: 30)),
+                                  ],
+                                ),
+                              ),
                     getPetList(size),
                     getAboutMe(),
                   ],
@@ -536,9 +548,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           fontFamily: 'Montserrat',
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[50]
-                          //decoration: TextDecoration.underline
-                          )),
+                          color: Colors.teal[50])),
                 ),
                 SizedBox(height: 15),
                 Row(
@@ -693,6 +703,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
+            alignment: Alignment.center,
             padding: const EdgeInsets.only(left: 70, right: 70),
             decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
@@ -708,103 +719,115 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                     fontWeight: FontWeight.bold,
                     color: Colors.teal[50])),
           ),
-          pets.isNotEmpty
+          petLoading
               ? Container(
-                  height: size.height * 0.5,
-                  child: ListView.builder(
-                    controller: controller,
-                    itemCount: pets.length,
-                    physics: BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return Container(
-                          height: 120,
-                          margin: const EdgeInsets.symmetric(
-                              horizontal: 15, vertical: 10),
-                          decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Colors.black.withAlpha(100),
-                                    blurRadius: 10.0),
-                              ]),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 15.0, vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: <Widget>[
-                                Container(
-                                  decoration:
-                                      BoxDecoration(shape: BoxShape.circle),
-                                  child: Image(
-                                    image: MemoryImage(pets[index].petPic),
-                                    height: double.infinity,
-                                  ),
+                  margin: EdgeInsets.only(top: 50),
+                  child: CircularProgressIndicator(
+                      backgroundColor: Colors.white,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Colors.teal[900])),
+                )
+              : pets.isNotEmpty
+                  ? Container(
+                      height: size.height * 0.5,
+                      child: ListView.builder(
+                        controller: controller,
+                        itemCount: pets.length,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return Container(
+                              height: 120,
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 10),
+                              decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withAlpha(100),
+                                        blurRadius: 10.0),
+                                  ]),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15.0, vertical: 10),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: <Widget>[
+                                    Container(
+                                      decoration:
+                                          BoxDecoration(shape: BoxShape.circle),
+                                      child: Image(
+                                        image: MemoryImage(pets[index].petPic),
+                                        height: double.infinity,
+                                      ),
+                                    ),
+                                    Expanded(
+                                        child: Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          PetProfilePage(
+                                                              pet: pets[index],
+                                                              publicViewType:
+                                                                  true)));
+                                              print("pressed");
+                                            },
+                                            child: Text(pets[index].petName,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                    color: Colors.black,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'Montserrat')),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  pets[index].petBreed,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontFamily: 'Montserrat'),
+                                                ),
+                                                Text(
+                                                  pets[index].petSex,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                      color: Colors.grey,
+                                                      fontFamily: 'Montserrat'),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )),
+                                  ],
                                 ),
-                                Expanded(
-                                    child: Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      PetProfilePage(
-                                                          pet: pets[index])));
-                                          print("pressed");
-                                        },
-                                        child: Text(pets[index].petName,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                                color: Colors.black,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'Montserrat')),
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 10),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              pets[index].petBreed,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontFamily: 'Montserrat'),
-                                            ),
-                                            Text(
-                                              pets[index].petSex,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                  color: Colors.grey,
-                                                  fontFamily: 'Montserrat'),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )),
-                              ],
-                            ),
-                          ));
-                    },
-                  ))
-              : Container(),
+                              ));
+                        },
+                      ))
+                  : Container(),
         ],
       ),
     );

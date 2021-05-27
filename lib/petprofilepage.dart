@@ -1,17 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
-import 'package:wap/editprofile.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
 import 'package:wap/searchPage.dart';
-import 'package:wap/setupPetProfile.dart';
 import 'package:wap/classtype.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
-  const PetProfilePage({@required this.pet});
+  final bool publicViewType;
+  const PetProfilePage({@required this.pet, @required this.publicViewType});
   @override
   _PetProfilePageState createState() => _PetProfilePageState();
 }
@@ -19,54 +17,16 @@ class PetProfilePage extends StatefulWidget {
 class _PetProfilePageState extends State<PetProfilePage> {
   int selectedIndex = 0;
   final FirebaseAuth auth = FirebaseAuth.instance;
-  int _selectedIndex = 2;
-  String un = "WAP USER";
-  String thisname = "WAP USER";
-  String bio = " ";
-  String address = "The user has not set this yet.";
-  String contact = "The user has not set this yet.";
-  String nickname = "The user has not set this yet.";
-  dynamic pic = AssetImage('assets/images/confused.png');
   ScrollController controller = ScrollController();
-  bool isLoading = true;
-  List<bool> _isChecked;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
-        }
-        break;
-      case 1:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SearchPage()));
-        }
-        break;
-      case 2:
-        {}
-        break;
-      case 3:
-        {}
-        break;
-      case 4:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SettingsPage()));
-        }
-        break;
-    }
+  savePet() async {
+    final db = DatabaseService(uid: auth.currentUser.uid);
+    db.addToBookmarks(widget.pet.petID);
   }
 
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
-    //display pet profile
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal[100],
@@ -89,7 +49,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
       body: SingleChildScrollView(
           child: Stack(children: [
         Column(
-            //alignment: Alignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -149,104 +108,151 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 ),
               ),
               SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      print("Adopt");
-                    },
-                    child: Container(
-                        padding: EdgeInsets.only(left: 10, right: 5),
-                        height: 45,
-                        width: MediaQuery.of(context).size.width / 3,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: Colors.teal,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 1.0), //(x,y)
-                              blurRadius: 6.0,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          //mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 5),
-                              height: 25,
-                              width: 25,
+              widget.publicViewType
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            print("Adopt");
+                          },
+                          child: Container(
+                              padding: EdgeInsets.only(left: 10, right: 5),
+                              height: 45,
+                              width: MediaQuery.of(context).size.width / 3,
                               decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image:
-                                        AssetImage('assets/images/adopt.png'),
-                                    fit: BoxFit.contain),
+                                shape: BoxShape.rectangle,
+                                color: Colors.teal,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: Offset(0.0, 1.0), //(x,y)
+                                    blurRadius: 6.0,
+                                  ),
+                                ],
                               ),
-                            ),
-                            SizedBox(width: 5),
-                            Text("Adopt",
-                                style: TextStyle(
-                                    fontFamily: 'Fredoka One',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.teal[50]
-                                    //decoration: TextDecoration.underline
-                                    )),
-                          ],
-                        )),
-                  ),
-                  SizedBox(width: 15),
-                  GestureDetector(
-                    onTap: () {
-                      print("Bookmark");
-                      createBookmarked(context);
-                    },
-                    child: Container(
-                        padding: EdgeInsets.only(left: 10, right: 5),
-                        height: 45,
-                        width: MediaQuery.of(context).size.width / 3,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.rectangle,
-                          color: Colors.teal,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              offset: Offset(0.0, 1.0), //(x,y)
-                              blurRadius: 6.0,
-                            ),
-                          ],
+                              child: Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(left: 5),
+                                    height: 25,
+                                    width: 25,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/adopt.png'),
+                                          fit: BoxFit.contain),
+                                    ),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Text("Adopt",
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka One',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal[50]
+                                          //decoration: TextDecoration.underline
+                                          )),
+                                ],
+                              )),
                         ),
-                        child: Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.only(left: 5),
-                              height: 25,
-                              width: 25,
+                        SizedBox(width: 15),
+                        GestureDetector(
+                          onTap: () async {
+                            await savePet();
+                            createBookmarked(context);
+                          },
+                          child: Container(
+                              padding: EdgeInsets.only(left: 10, right: 5),
+                              height: 45,
+                              width: MediaQuery.of(context).size.width / 3,
                               decoration: BoxDecoration(
-                                image: DecorationImage(
-                                    image: AssetImage(
-                                        'assets/images/bookmark.png'),
-                                    fit: BoxFit.contain),
+                                shape: BoxShape.rectangle,
+                                color: Colors.teal,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey,
+                                    offset: Offset(0.0, 1.0), //(x,y)
+                                    blurRadius: 6.0,
+                                  ),
+                                ],
                               ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    margin: EdgeInsets.only(left: 5),
+                                    height: 25,
+                                    width: 25,
+                                    decoration: BoxDecoration(
+                                      image: DecorationImage(
+                                          image: AssetImage(
+                                              'assets/images/bookmark.png'),
+                                          fit: BoxFit.contain),
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text("Save",
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka One',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal[50]
+                                          //decoration: TextDecoration.underline
+                                          )),
+                                ],
+                              )),
+                        )
+                      ],
+                    )
+                  : Container(
+                      alignment: Alignment.center,
+                      child: GestureDetector(
+                        onTap: () {
+                          print("Edit");
+                        },
+                        child: Container(
+                            padding: EdgeInsets.only(left: 10, right: 5),
+                            height: 45,
+                            width: MediaQuery.of(context).size.width / 3,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              color: Colors.teal,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey,
+                                  offset: Offset(0.0, 1.0), //(x,y)
+                                  blurRadius: 6.0,
+                                ),
+                              ],
                             ),
-                            SizedBox(width: 8),
-                            Text("Save",
-                                style: TextStyle(
-                                    fontFamily: 'Fredoka One',
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.teal[50]
-                                    //decoration: TextDecoration.underline
-                                    )),
-                          ],
-                        )),
-                  )
-                ],
-              ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(left: 5),
+                                  height: 25,
+                                  width: 25,
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                        image: AssetImage(
+                                            'assets/images/adopt.png'),
+                                        fit: BoxFit.contain),
+                                  ),
+                                ),
+                                SizedBox(width: 15),
+                                Expanded(
+                                  child: Text("Edit",
+                                      style: TextStyle(
+                                          fontFamily: 'Fredoka One',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal[50])),
+                                )
+                              ],
+                            )),
+                      )),
               SizedBox(height: 10),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 3),
@@ -347,37 +353,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
               ),
             ])
       ])),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
-            label: 'Messages',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.teal,
-        showUnselectedLabels: true,
-      ),
     );
   }
 
@@ -520,49 +495,49 @@ class _PetProfilePageState extends State<PetProfilePage> {
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Stack(
-              alignment: Alignment.topCenter,
-              clipBehavior: Clip.none,
-              children: <Widget>[
-                Container(
-                  height: MediaQuery.of(context).size.height / 5,
-                  width: MediaQuery.of(context).size.width / 1.3,
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 50),
-                        Text("Saved in Bookmarks",
-                            style: TextStyle(fontFamily: 'Montserrat')),
-                        SizedBox(height: 20),
-                        MaterialButton(
-                            color: Colors.teal[100],
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100)),
-                            child: Text("Done",
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text("Saved in Bookmarks",
                                 style: TextStyle(fontFamily: 'Montserrat')),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            })
-                      ],
+                            SizedBox(height: 20),
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Done",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Positioned(
-                    top: -50,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.transparent,
-                      radius: 55,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                          child: Image.asset('assets/images/wink.png')),
-                    ))
-              ]),
-        );
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 55,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child: Image.asset('assets/images/wink.png')),
+                        ))
+                  ]),
+            ));
       },
       barrierDismissible: true,
     );

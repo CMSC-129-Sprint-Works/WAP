@@ -104,7 +104,6 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    //display search page
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -127,8 +126,14 @@ class _SearchPageState extends State<SearchPage> {
           new SizedBox(height: 10),
           Padding(
             padding: EdgeInsets.all(5),
-            child: searchedUsers.isEmpty
-                ? searched
+            child: !searched
+                ? Container(
+                    padding: EdgeInsets.all(100),
+                    child: Image.asset(
+                      'assets/images/search.png',
+                      color: Colors.teal,
+                    ))
+                : searchedUsers.isEmpty
                     ? Text(
                         "No results found",
                         style: TextStyle(
@@ -137,157 +142,160 @@ class _SearchPageState extends State<SearchPage> {
                           fontFamily: 'Montserrat',
                         ),
                       )
-                    : SizedBox(height: 0)
-                : Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 10),
-                        Text(
-                          "Search Results",
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.black,
-                            fontFamily: 'Montserrat',
-                          ),
-                        ),
-                        SizedBox(height: 5),
-                        Container(
-                          padding: const EdgeInsets.only(left: 70, right: 70),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              color: Colors.teal,
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                        Container(
-                            height: size.height * 0.9,
-                            child: ListView.builder(
-                              controller: controller,
-                              itemCount: searchedUsers.length,
-                              physics: BouncingScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return Container(
-                                    height: 100,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 15, vertical: 10),
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(10)),
-                                        color: Colors.white,
-                                        boxShadow: [
-                                          BoxShadow(
-                                              color:
-                                                  Colors.black.withAlpha(100),
-                                              blurRadius: 10.0),
-                                        ]),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 5.0, vertical: 10),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: <Widget>[
-                                          Container(
-                                              margin: EdgeInsets.only(left: 15),
-                                              decoration: BoxDecoration(
-                                                  shape: BoxShape.circle),
-                                              child: CircleAvatar(
-                                                radius: 30,
-                                                backgroundImage: usersPic
-                                                            .length ==
-                                                        searchedUsers.length
-                                                    ? usersPic[index]
-                                                    : AssetImage(
-                                                        'assets/images/defaultPic.png'),
-                                              )),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 5),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: <Widget>[
-                                                TextButton(
-                                                    onPressed: () {
-                                                      FirebaseAuth
-                                                                  .instance
-                                                                  .currentUser
-                                                                  .uid ==
-                                                              id[index]
-                                                          ? Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                  builder: (context) =>
-                                                                      ProfilePage()))
-                                                          : Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                  builder: (context) =>
-                                                                      PublicProfilePage(
-                                                                          id[index])));
-                                                    },
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                            usersName.length ==
-                                                                    searchedUsers
-                                                                        .length
-                                                                ? usersName[
-                                                                    index]
-                                                                : "WAP USER",
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                            softWrap: true,
-                                                            style: const TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                decoration:
-                                                                    TextDecoration
-                                                                        .underline,
-                                                                fontSize: 14,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontFamily:
-                                                                    'Montserrat')),
-                                                        Text(
-                                                          usersUsername
-                                                                      .length ==
-                                                                  searchedUsers
-                                                                      .length
-                                                              ? "@" +
-                                                                  usersUsername[
-                                                                      index]
-                                                              : "@WAP_USER",
-                                                          style: const TextStyle(
-                                                              color:
-                                                                  Colors.grey,
-                                                              fontFamily:
-                                                                  'Montserrat'),
-                                                        ),
-                                                      ],
-                                                    )),
-                                                SizedBox(
-                                                  height: 10,
+                    : Container(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 10),
+                            Text(
+                              "Search Results",
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: Colors.black,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Container(
+                              padding:
+                                  const EdgeInsets.only(left: 70, right: 70),
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  color: Colors.teal,
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                            Container(
+                                height: size.height * 0.9,
+                                child: ListView.builder(
+                                  controller: controller,
+                                  itemCount: searchedUsers.length,
+                                  physics: BouncingScrollPhysics(),
+                                  itemBuilder: (context, index) {
+                                    return Container(
+                                        height: 100,
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 15, vertical: 10),
+                                        decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(10)),
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  color: Colors.black
+                                                      .withAlpha(100),
+                                                  blurRadius: 10.0),
+                                            ]),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5.0, vertical: 10),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: <Widget>[
+                                              Container(
+                                                  margin:
+                                                      EdgeInsets.only(left: 15),
+                                                  decoration: BoxDecoration(
+                                                      shape: BoxShape.circle),
+                                                  child: CircleAvatar(
+                                                    radius: 30,
+                                                    backgroundImage: usersPic
+                                                                .length ==
+                                                            searchedUsers.length
+                                                        ? usersPic[index]
+                                                        : AssetImage(
+                                                            'assets/images/defaultPic.png'),
+                                                  )),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 5),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    TextButton(
+                                                        onPressed: () {
+                                                          FirebaseAuth
+                                                                      .instance
+                                                                      .currentUser
+                                                                      .uid ==
+                                                                  id[index]
+                                                              ? Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              ProfilePage()))
+                                                              : Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                      builder:
+                                                                          (context) =>
+                                                                              PublicProfilePage(id[index])));
+                                                        },
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                                usersName.length ==
+                                                                        searchedUsers
+                                                                            .length
+                                                                    ? usersName[
+                                                                        index]
+                                                                    : "WAP USER",
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                softWrap: true,
+                                                                style: const TextStyle(
+                                                                    color: Colors
+                                                                        .black,
+                                                                    decoration:
+                                                                        TextDecoration
+                                                                            .underline,
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontFamily:
+                                                                        'Montserrat')),
+                                                            Text(
+                                                              usersUsername
+                                                                          .length ==
+                                                                      searchedUsers
+                                                                          .length
+                                                                  ? "@" +
+                                                                      usersUsername[
+                                                                          index]
+                                                                  : "@WAP_USER",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .grey,
+                                                                  fontFamily:
+                                                                      'Montserrat'),
+                                                            ),
+                                                          ],
+                                                        )),
+                                                    SizedBox(
+                                                      height: 10,
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ));
-                              },
-                            )),
-                      ],
-                    ),
-                  ),
+                                              )
+                                            ],
+                                          ),
+                                        ));
+                                  },
+                                )),
+                          ],
+                        ),
+                      ),
           ),
         ],
       )),

@@ -10,7 +10,6 @@ class RegisterAccount extends StatefulWidget {
 class _RegisterAccountState extends State<RegisterAccount> {
   @override
   Widget build(BuildContext context) {
-    //user chooses an account: personal or institutional
     return Scaffold(
         backgroundColor: Colors.teal[400],
         appBar: AppBar(

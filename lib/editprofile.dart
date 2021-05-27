@@ -8,12 +8,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class EditProfile extends StatefulWidget {
   dynamic pic;
-  final firstName;
-  final lastName;
-  final bio;
-  final address;
-  final nickname;
-  final contactNum;
+  String firstName;
+  String lastName;
+  String bio;
+  String address;
+  String nickname;
+  String contactNum;
   EditProfile(this.pic, this.firstName, this.lastName, this.bio, this.address,
       this.nickname, this.contactNum);
   @override
@@ -33,6 +33,7 @@ class _EditProfileState extends State<EditProfile> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final picker = ImagePicker();
   var fileName = "Upload Profile Picture";
+  double _progress;
 
   File _imageFile;
   PickedFile image;
@@ -66,6 +67,13 @@ class _EditProfileState extends State<EditProfile> {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
     final UploadTask uploadTask = storageReference.putFile(_imageFile);
+    uploadTask.snapshotEvents.listen((event) {
+      setState(() {
+        _progress =
+            event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
+      });
+    });
+    print(_progress);
   }
 
   updateProfile(BuildContext context) async {
@@ -106,7 +114,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //to edit profile pic, name, username, and bio of user
+      //to edit profile pic, name, username, and bio
       appBar: AppBar(
         elevation: 1,
         backgroundColor: Colors.teal[100],
@@ -146,15 +154,17 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                           ),
                         ),
-                        IconButton(
-                          padding: EdgeInsets.only(right: 200),
-                          icon: Icon(
-                            Icons.edit,
-                            color: Colors.teal,
+                        Container(
+                          padding: EdgeInsets.only(right: 190),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.teal,
+                            ),
+                            onPressed: () async {
+                              await uploadImage(context);
+                            },
                           ),
-                          onPressed: () async {
-                            await uploadImage(context);
-                          },
                         ),
                       ],
                     ),
@@ -185,16 +195,20 @@ class _EditProfileState extends State<EditProfile> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    padding: EdgeInsets.only(right: 200),
-                    icon: Icon(
-                      Icons.edit,
-                      color: Colors.teal,
+                  Container(
+                    padding: EdgeInsets.only(right: 190),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.edit,
+                        color: Colors.teal,
+                      ),
+                      onPressed: () async {
+                        await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => buildForm()));
+                      },
                     ),
-                    onPressed: () async {
-                      await Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => buildForm()));
-                    },
                   ),
                 ]),
               ),
@@ -231,8 +245,6 @@ class _EditProfileState extends State<EditProfile> {
                           ],
                         ),
                         Column(
-                          //crossAxisAlignment: CrossAxisAlignment.start,
-                          //mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Container(
                                 margin: EdgeInsets.only(
@@ -302,8 +314,6 @@ class _EditProfileState extends State<EditProfile> {
                           ],
                         ),
                         Column(
-                          //crossAxisAlignment: CrossAxisAlignment.start,
-                          //mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Container(
                                 margin: EdgeInsets.only(
@@ -360,7 +370,6 @@ class _EditProfileState extends State<EditProfile> {
                         ),
                         Container(
                             margin: EdgeInsets.only(
-                              //left: 80,
                               top: 5,
                             ),
                             alignment: Alignment.center,
@@ -372,7 +381,6 @@ class _EditProfileState extends State<EditProfile> {
                                 fontFamily: 'Montserrat',
                               ),
                             )),
-                        //buildForm(),
                         SizedBox(height: 30),
                         Column(
                           children: [
@@ -380,9 +388,7 @@ class _EditProfileState extends State<EditProfile> {
                               padding: EdgeInsets.symmetric(horizontal: 50),
                               child: MaterialButton(
                                 onPressed: () {
-                                  // if (_key.currentState.validate()) {
                                   updateProfile(context);
-                                  // }
                                 },
                                 minWidth: double.infinity,
                                 shape: RoundedRectangleBorder(
@@ -429,7 +435,6 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
         body: ListView(
-          //crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             SizedBox(height: 10),
             Padding(
@@ -489,7 +494,6 @@ class _EditProfileState extends State<EditProfile> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
                             borderSide: BorderSide(color: Colors.teal[200])),
-                        // fillColor: Colors.teal[200],
                         filled: true,
                         hintText: 'Last Name',
                         hintStyle: TextStyle(
@@ -518,7 +522,6 @@ class _EditProfileState extends State<EditProfile> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
                             borderSide: BorderSide(color: Colors.teal[200])),
-                        // fillColor: Colors.teal[200],
                         filled: true,
                         hintText: 'Bio',
                         hintStyle: TextStyle(
@@ -547,7 +550,6 @@ class _EditProfileState extends State<EditProfile> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
                             borderSide: BorderSide(color: Colors.teal[200])),
-                        // fillColor: Colors.teal[200],
                         filled: true,
                         hintText: 'Nickname',
                         hintStyle: TextStyle(
@@ -576,7 +578,6 @@ class _EditProfileState extends State<EditProfile> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
                             borderSide: BorderSide(color: Colors.teal[200])),
-                        // fillColor: Colors.teal[200],
                         filled: true,
                         hintText: 'Address',
                         hintStyle: TextStyle(
@@ -601,7 +602,6 @@ class _EditProfileState extends State<EditProfile> {
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5),
                             borderSide: BorderSide(color: Colors.teal[200])),
-                        // fillColor: Colors.teal[200],
                         filled: true,
                         hintText: 'Contact Number',
                         hintStyle: TextStyle(

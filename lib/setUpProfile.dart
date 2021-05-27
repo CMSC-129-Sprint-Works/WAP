@@ -6,7 +6,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wap/database.dart';
-import 'package:firebase_core/firebase_core.dart';
 
 class SetupProfilePage extends StatefulWidget {
   @override
@@ -14,7 +13,6 @@ class SetupProfilePage extends StatefulWidget {
 }
 
 class _SetupProfilePageState extends State<SetupProfilePage> {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
   TextEditingController _descriptionController = TextEditingController();
   TextEditingController _nicknameController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
@@ -23,7 +21,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final picker = ImagePicker();
   var fileName = "Upload Profile Picture";
-  String downloadURL;
 
   var _imageFile;
   PickedFile image;
@@ -61,7 +58,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    //Setup profile page for personal account
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.teal,
@@ -141,7 +137,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
     );
   }
 
-  @override
   Widget buildForm(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
