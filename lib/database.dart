@@ -325,8 +325,7 @@ class DatabaseService {
     String petMedHis;
     String petOthers;
     try {
-      final ud =
-          await userpets.doc(uid).collection('petlist').get().then((doc) async {
+      final ud = await userpets.doc(uid).collection('petlist').get().then((doc) async {
         await Future.forEach(doc.docs, (e) async {
           petID = e.id;
           petName = e['name'];
