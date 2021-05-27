@@ -33,7 +33,7 @@ class _AddPostPageState extends State<AddPostPage> {
   bool uploading = false;
 
   UploadTask uploadTask;
-  double _progress = 0;
+  //double _progress = 0;
 
   initState() {
     if (!mounted) {
