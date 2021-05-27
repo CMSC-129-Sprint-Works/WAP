@@ -27,12 +27,13 @@ class _AddPostPageState extends State<AddPostPage> {
   final picker = ImagePicker();
   String fileName;
   var _imageFile;
-  PickedFile image;
+  PickedFile image;.
+  Reference image;
   String thisname = "WAP USER";
   dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool uploading = false;
 
-  UploadTask uploadTask;
+  //UploadTask uploadTask;
   //double _progress = 0;
 
   initState() {
