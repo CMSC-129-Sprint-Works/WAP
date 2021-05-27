@@ -241,6 +241,7 @@ class DatabaseService {
       if (postCount > 0) {
         for (int i = postCount; i > 0; i--) {
           name2 = i.toString();
+          //ignore not_enough_positional_arguments
           postPic = await storageReference.child("Posts/$uid/$name2").getData();
           caption = ud.get(name2);
           post = new Post(
