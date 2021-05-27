@@ -33,6 +33,23 @@ jobs:
     # found syntax errors in the sourcecode
       working-directory: ./
     - run: flutter build appbundle
-   
-    
-   
+
+
+ buildUnitTest:
+     runs-on: ubuntu-latest
+#runs unit tests located in the project.  (- name: Assemble app debug APK)  
+     steps:
+        - name: Run Unit tests
+          run: bash ./gradlew test --stacktrace
+          env:
+            WAP_API_KEY: ${{ secrets.WAP_API_KEY }}
+
+        - name: Upload Android Test APK
+          uses: actions/upload-artifact@v1
+          with:
+            name: app-debug-androidTest
+            path: app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk   
+
+     
+  
+
