@@ -1,8 +1,3 @@
- # This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Flutter CI
 
 on: push
@@ -20,12 +15,9 @@ jobs:
         channel: 'stable'  
     - run: dart --version
    # - run: dart pub outdated --mode=null-safety
-  
-  #- run: dart pub upgrade --null-safety 
-
-    
+   #- run: dart pub upgrade --null-safety 
     - run: dart pub get
-    - run: dart analyze 
+   # - run: dart analyze 
   #  - run: dart migrate 
     #- name: Get flutter dependencies.
     #- run: flutter --no-sound-null-safety
@@ -33,14 +25,14 @@ jobs:
     
 
  
-      #- name: Run tests for our flutter project once we add unit tests.
-    - run: flutter test
+    #- name: Run tests for our flutter project once we add unit tests.
+    #- run: flutter test
     
       #- name: Build apk.
     - run: flutter build apk
     # found syntax errors in the sourcecode
-     # working-directory: ./
-    #- run: flutter build appbundle
+      working-directory: ./
+    - run: flutter build appbundle
    
     
    
