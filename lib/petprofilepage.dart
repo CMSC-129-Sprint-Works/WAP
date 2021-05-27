@@ -1,9 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
-import 'package:wap/settingsPage.dart';
-import 'package:wap/home_page.dart';
-import 'package:wap/searchPage.dart';
+//import 'package:wap/settingsPage.dart';
+//import 'package:wap/home_page.dart';
+//import 'package:wap/searchPage.dart';
 import 'package:wap/classtype.dart';
 
 class PetProfilePage extends StatefulWidget {
