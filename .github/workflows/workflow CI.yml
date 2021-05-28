@@ -38,10 +38,11 @@ jobs:
       #- run: flutter test
       
    #runs unit tests located in the project.  (- name: Assemble app debug APK)  
-      - name: Run Unit tests
-        run: bash ./gradlew test --stacktrace
-        env:
-           WAP_API_KEY: ${{ secrets.WAP_API_KEY }}   
+     # - name: Run Unit tests
+      #  path: 
+       # run: bash ./gradlew test --stacktrace
+        #env:
+         #  WAP_API_KEY: ${{ secrets.WAP_API_KEY }}   
       
     # Upload generated apk to the artifacts.
       - uses: actions/upload-artifact@v2
@@ -60,5 +61,5 @@ jobs:
             uses: actions/download-artifact@v1
             with:
               name: app-debug
-              path: build/app/outputs/apk/debug/app-debug.apk  
+             # path: build/app/outputs/apk/debug/app-debug.apk  
      
