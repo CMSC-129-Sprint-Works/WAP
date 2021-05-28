@@ -32,5 +32,7 @@ jobs:
           
         # Get flutter packages
       - run: flutter pub get
-      # Build :D 
-      - run: flutter build aot #designed with a large number of configurations to support integration into the iOS and Android build scripts
+       # Analyze our Dart code
+      #- run: flutter analyze
+      # Run our tests
+      #- run: flutter test
