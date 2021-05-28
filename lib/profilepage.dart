@@ -20,7 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void getUserData() async {
     final User user = auth.currentUser;
     dynamic uname = await DatabaseService(uid: user.uid).getUsername();
- //   dynamic name1 = await DatabaseService(uid: user.uid).getName();
+    dynamic name1 = await DatabaseService(uid: user.uid).getName();
     // dynamic bio1 = await DatabaseService(uid: user.uid).getBio();
     thisname = name1;
     un = uname;
