@@ -8,10 +8,10 @@ class Post {
   final String caption;
 
   Post(
-      {@required this.userPic,
-      @required this.userName,
-      @required this.postPic,
-      this.caption});
+      {required this.userPic,
+      required this.userName,
+      required this.postPic,
+      required this.caption});
 }
 
 class Pet {
@@ -27,14 +27,14 @@ class Pet {
   final String petOthers;
 
   Pet(
-      {@required this.petID,
-      @required this.petPic,
-      @required this.petName,
-      @required this.petAge,
-      @required this.petSex,
-      @required this.petBreed,
-      @required this.petNeeds,
-      @required this.petCharacteristics,
-      @required this.petMedHis,
-      this.petOthers});
+      {required this.petID,
+      required this.petPic,
+      required this.petName,
+      required this.petAge,
+      required this.petSex,
+      required this.petBreed,
+      required this.petNeeds,
+      required this.petCharacteristics,
+      required this.petMedHis,
+      required this.petOthers});
 }
