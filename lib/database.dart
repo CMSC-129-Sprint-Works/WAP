@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:recase/recase.dart';
 
 class DatabaseService {
   final String uid;
@@ -50,7 +51,7 @@ class DatabaseService {
   Future getName() async {
     try {
       DocumentSnapshot un = await userslist.doc(uid).get();
-      return recase(un.get("first name") + " " + un.get("last name")).titleCase;
+      return ReCase(un.get("first name") + " " + un.get("last name")).titleCase;
     } catch (e) {
       print(e.toString());
       return null;
