@@ -62,7 +62,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
       ),
       body: isLoading
           ? LinearProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal[900]),
+              valueColor: AlwaysStoppedAnimation<Color>( Colors.teal[900])!)),
               backgroundColor: Colors.white,
             )
           : SingleChildScrollView(
@@ -268,6 +268,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
 
   showDialogDelete(List<int> selectedIndex) {
     bool flag;
+    flag = true;
     showDialog(
       context: context,
       builder: (context) {
