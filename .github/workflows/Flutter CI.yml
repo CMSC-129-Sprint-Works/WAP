@@ -1,0 +1,42 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Final Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+# Define the Jobs we want to run as part of this Workflow
+jobs:
+  # Define our build and test Job
+   build-and-test: 
+   
+    # We want to run this Job on an Ubuntu VM 
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code using V1 of the standard checkout Action
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+       
+       # Use the standard Java Action to setup Java 
+      - uses: actions/setup-java@v1
+        with:
+          # we want the latest Java 12
+          java-version: '12.x'
+
+        # Use the community Action to install Flutter
+      - uses: subosito/flutter-action@v1
+        with:
+          # we want the stable channel
+          channel: 'stable'  
+          
+        # Get flutter packages
+      - run: flutter pub get
+      # Build :D 
+      - run: flutter build aot #designed with a large number of configurations to support integration into the iOS and Android build scripts
