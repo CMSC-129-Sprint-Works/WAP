@@ -1,9 +1,9 @@
 name: Final Workflow
 on:
   push:
-    branches: [ master ]
+    branches: [dev ]
   pull_request:
-    branches: [ master ]
+    branches: [ dev ]
     
 # Define the Jobs we want to run as part of this Workflow
 jobs:
