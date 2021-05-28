@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
   String uid;
-  DatabaseService({this.uid});
+  DatabaseService({required this.uid});
 
   final CollectionReference userslist =
       FirebaseFirestore.instance.collection('users');
