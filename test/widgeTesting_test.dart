@@ -7,7 +7,7 @@ void main() {
 
 testWidgets('MyWidget has a title and message', (WidgetTester tester) async {
     // Create the widget by telling the tester to build it.
-     await tester.pumpWidget(MyWidget(title: 'T', description: 'M'));
+     await tester.pumpWidget(WelcomeSliderPage(title: 'T', description: 'M'));
 
     // Create the Finders.
     final titleFinder = find.text('T');
