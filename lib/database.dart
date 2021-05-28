@@ -50,7 +50,7 @@ class DatabaseService {
   Future getName() async {
     try {
       DocumentSnapshot un = await userslist.doc(uid).get();
-      return ReCase(un.get("first name") + " " + un.get("last name")).titleCase;
+      return recase(un.get("first name") + " " + un.get("last name")).titleCase;
     } catch (e) {
       print(e.toString());
       return null;
