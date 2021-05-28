@@ -42,3 +42,19 @@ jobs:
         with: 
          name: release-apk
          path: build/app/outputs/apk/release/app-release.apk  
+         
+         
+   Firebase:
+       runs-on: ubuntu-latest
+       
+       name: Run UI tests with Firebase Test Lab
+       steps:
+          - uses: actions/checkout@v1
+          - name: Download app APK  #download all the artifacts we generated in the previous step
+            uses: actions/download-artifact@v1
+            with:
+              name: app-debug
+          - name: Download Android test APK
+            uses: actions/download-artifact@v1
+            with:
+              name: app-debug-androidTest
