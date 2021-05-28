@@ -186,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
               : (Container()),
       body: isLoading
           ? LinearProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal[900]),
+              valueColor: AlwaysStoppedAnimation<Color>( Colors.teal[900])!)),
               backgroundColor: Colors.white,
             )
           : ListView(
@@ -422,7 +422,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: CircularProgressIndicator(
                                 backgroundColor: Colors.white,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.teal[900])),
+                                   Colors.teal[900])!)),
                           )
                         : posts.isNotEmpty
                             ? getPosts(size)
@@ -747,7 +747,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: CircularProgressIndicator(
                       backgroundColor: Colors.white,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Colors.teal[900])),
+                          AlwaysStoppedAnimation<Color>( Colors.teal[900])!)),
                 )
               : pets.isNotEmpty
                   ? Container(
@@ -780,7 +780,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         activeColor: Colors.teal,
                                         checkColor: Colors.white,
                                         value: _isChecked[index],
-                                        onChanged: (bool value) {
+                                        onChanged: (bool? value) {
                                           setState(() {
                                             _isChecked[index] = value;
                                           });
@@ -867,6 +867,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   showDialogDelete(List<int> selectedIndex) {
     bool flag;
+    flag = true;
     showDialog(
       context: context,
       builder: (context) {
