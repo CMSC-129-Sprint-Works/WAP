@@ -25,7 +25,7 @@ jobs:
     
 
  
-    - name: Run tests for our flutter project once we add unit tests.
+    #- name: Run tests for our flutter project once we add unit tests.
     - run: flutter test
     
       #- name: Build apk.
