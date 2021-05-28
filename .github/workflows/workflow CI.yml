@@ -5,6 +5,13 @@ on:
   pull_request:
     branches: [ dev ]
     
+  schedule:
+    #this triggers the workflow every day at 5:00 am and 6:00pm everyday
+    - cron:  '0 5,18 * * *'
+  create:
+  delete:
+  deployment:
+    
 # Define the Jobs we want to run as part of this Workflow
 jobs:
   # Define our build and test Job
