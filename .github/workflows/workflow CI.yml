@@ -66,5 +66,5 @@ jobs:
         env:
           PROJECT_ID: "waplogin-469a3" 
           FIREBASE_TOKEN: ${{ secrets.teydQyEWbeGHoWiCzL7pO7MKGI7GD7uFpl0uBTgG}}
-        with:
-          args: deploy
+       # with:
+        #  args: deploy
