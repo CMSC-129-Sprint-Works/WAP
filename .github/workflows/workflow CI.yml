@@ -65,6 +65,6 @@ jobs:
       - uses: jonahsnider/firebase-action@1.0.7
         env:
           PROJECT_ID: "waplogin-469a3" 
-          FIREBASE_TOKEN: ${{ secrets.1//0ecP3kSzqC-4UCgYIARAAGA4SNwF-L9IrmDSsUkbbwIIMmcqhAfQUm1sybO3PeFeXcseYq-h7sHd8kknGuagjDH3WPjpNX4bFc8w }}
+          FIREBASE_TOKEN: ${{ secrets.teydQyEWbeGHoWiCzL7pO7MKGI7GD7uFpl0uBTgG}}
         with:
           args: deploy
