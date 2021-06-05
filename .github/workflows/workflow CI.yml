@@ -5,9 +5,9 @@ on:
   pull_request:
     branches: [ dev ]
     
-  schedule:
+  #schedule:
     #this triggers the workflow every day at 5:00 am and 6:00pm everyday
-    - cron:  '0 5,18 * * *'
+   # - cron:  '0 5,18 * * *'
   create:
   delete:
   deployment:
@@ -58,15 +58,13 @@ jobs:
          path: build/app/outputs/apk/release/app-release.apk  
          
          
-   #Firebase:
-    #   runs-on: ubuntu-latest
-       
-     #  name: Run UI tests with Firebase Test Lab
-      # steps:
-       #   - uses: actions/checkout@v1
-        #  - name: Download app APK  #download all the artifacts we generated in the previous step
-         #   uses: actions/download-artifact@v1
-          #  with:
-           #   name: app-debug
-             # path: build/app/outputs/apk/debug/app-debug.apk  
-     
+   Firebase:
+    runs-on: ubuntu-latest
+ 
+    steps: 
+      - uses: jonahsnider/firebase-action@1.0.7
+        env:
+          PROJECT_ID: "waplogin-469a3" 
+          FIREBASE_TOKEN: ${{ secrets.1//0ecP3kSzqC-4UCgYIARAAGA4SNwF-L9IrmDSsUkbbwIIMmcqhAfQUm1sybO3PeFeXcseYq-h7sHd8kknGuagjDH3WPjpNX4bFc8w }}
+        with:
+          args: deploy
