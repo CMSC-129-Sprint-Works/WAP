@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:wap/searchPage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
+// ignore: unused_import
 import 'package:wap/searchedUser.dart';
 import 'package:wap/profilepage.dart';
 
@@ -26,6 +28,7 @@ class _MessageConvoState extends State<MessageConvo> {
   String firstname = "WAP";
   String lastname = "USER";
   final FirebaseAuth auth = FirebaseAuth.instance;
+  // ignore: unused_field
   bool _isChecked = false;
 
   initState() {
@@ -113,6 +116,7 @@ class _MessageConvoState extends State<MessageConvo> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(

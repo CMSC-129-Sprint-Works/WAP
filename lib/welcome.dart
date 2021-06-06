@@ -6,8 +6,7 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-  final String title;
- 
+  final String title = " ";
 
   @override
   Widget build(BuildContext context) {

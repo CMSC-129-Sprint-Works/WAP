@@ -22,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   bool fetchedPosts = false;
   ScrollController controller = ScrollController();
   bool isLoading = true;
+  // ignore: unused_field
   List<bool> _isChecked;
   List<dynamic> userID = [];
   List<Post> posts = [];

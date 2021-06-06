@@ -55,12 +55,14 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
     fileName2 = auth.currentUser.uid;
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Certificates/$fileName2");
+    // ignore: unused_local_variable
     final UploadTask uploadTask = storageReference.putData(_pdfFile);
   }
 
   updatePicture() async {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
+    // ignore: unused_local_variable
     final UploadTask uploadTask = storageReference.putFile(_imageFile);
   }
 

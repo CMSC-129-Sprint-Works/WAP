@@ -38,6 +38,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   updatePicture() async {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
+    // ignore: unused_local_variable
     final UploadTask uploadTask = storageReference.putFile(_imageFile);
   }
 

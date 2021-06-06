@@ -48,10 +48,12 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
   }
 
   addPicture(var namefile) async {
+    // ignore: unused_local_variable
     String id = auth.currentUser.uid;
     fileName = namefile;
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Pet Profile Pictures/$fileName");
+    // ignore: unused_local_variable
     final uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => ProfilePage()))
@@ -191,6 +193,7 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
                                                   createPet();
                                                   uploading = true;
                                                 })
+                                              // ignore: unnecessary_statements
                                               : null;
                                         }
                                       },

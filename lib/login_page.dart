@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool userExist = false;
 
   searchUser() async {
+    // ignore: await_only_futures
     final docSnap = await FirebaseFirestore.instance
         .collection('users')
         .where('username', isEqualTo: _usernameController.text);
@@ -34,9 +35,10 @@ class _LoginPageState extends State<LoginPage> {
     print(userExist);
     if (userExist == true) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(
-                email: email, password: _passwordController.text);
+        // ignore: unused_local_variable
+        UserCredential userCredential;
+        userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: email, password: _passwordController.text);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -104,7 +106,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    var size = MediaQuery.of(context).size;
+    // ignore: unused_local_variable
+    Size size;
+    size = MediaQuery.of(context).size;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.teal[400],

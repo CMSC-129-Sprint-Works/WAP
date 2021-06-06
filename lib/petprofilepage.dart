@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:wap/settingsPage.dart';
+// ignore: unused_import
 import 'package:wap/home_page.dart';
+// ignore: unused_import
 import 'package:wap/searchPage.dart';
 import 'package:wap/classtype.dart';
 

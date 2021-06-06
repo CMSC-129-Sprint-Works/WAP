@@ -261,9 +261,9 @@
     },
     {
       "name": "integration_test",
-      "rootUri": "file:///C:/flutter/packages/integration_test",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/integration_test-1.0.2+3",
       "packageUri": "lib/",
-      "languageVersion": "2.10"
+      "languageVersion": "2.2"
     },
     {
       "name": "intl",
@@ -500,7 +500,7 @@
       "languageVersion": "2.7"
     }
   ],
-  "generated": "2021-06-06T08:32:17.888533Z",
+  "generated": "2021-06-06T09:41:14.400758Z",
   "generator": "pub",
   "generatorVersion": "2.12.3"
 }

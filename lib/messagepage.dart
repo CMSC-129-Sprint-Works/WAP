@@ -1,3 +1,4 @@
+// ignore: unused_import
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
@@ -6,6 +7,7 @@ import 'package:wap/message_convo.dart';
 import 'package:wap/searchPage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
+// ignore: unused_import
 import 'package:wap/searchedUser.dart';
 import 'package:wap/profilepage.dart';
 
@@ -73,6 +75,7 @@ class _MessagePageState extends State<MessagePage> {
   String firstname = "WAP";
   String lastname = "USER";
   final FirebaseAuth auth = FirebaseAuth.instance;
+  // ignore: unused_field
   bool _isChecked = false;
 
   initState() {

@@ -33,6 +33,7 @@ class _AddPostPageState extends State<AddPostPage> {
   bool uploading = false;
 
   UploadTask uploadTask;
+  // ignore: unused_field
   double _progress = 0;
 
   initState() {

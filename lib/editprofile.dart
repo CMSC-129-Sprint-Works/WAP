@@ -6,6 +6,7 @@ import 'package:wap/profilepage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+// ignore: must_be_immutable
 class EditProfile extends StatefulWidget {
   dynamic pic;
   String firstName;
