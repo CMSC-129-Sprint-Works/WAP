@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
-//import 'package:wap/settingsPage.dart';
-//import 'package:wap/home_page.dart';
-//import 'package:wap/searchPage.dart';
+import 'package:wap/settingsPage.dart';
+import 'package:wap/home_page.dart';
+import 'package:wap/searchPage.dart';
 import 'package:wap/classtype.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
   final bool publicViewType;
-  const PetProfilePage({required this.pet, required this.publicViewType});
+  const PetProfilePage({@required this.pet, @required this.publicViewType});
   @override
   _PetProfilePageState createState() => _PetProfilePageState();
 }

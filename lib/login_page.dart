@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool userExist = false;
 
   searchUser() async {
-    final docSnap = FirebaseFirestore.instance 
+    final docSnap = await FirebaseFirestore.instance
         .collection('users')
         .where('username', isEqualTo: _usernameController.text);
     await docSnap.get().then((value) async {
@@ -34,7 +34,8 @@ class _LoginPageState extends State<LoginPage> {
     print(userExist);
     if (userExist == true) {
       try {
-        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
                 email: email, password: _passwordController.text);
         Navigator.pushReplacement(
             context,
@@ -103,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    //var size = MediaQuery.of(context).size;
+    var size = MediaQuery.of(context).size;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.teal[400],

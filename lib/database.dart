@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseService {
   String uid;
-  DatabaseService({required this.uid});
+  DatabaseService({this.uid});
 
   final CollectionReference userslist =
       FirebaseFirestore.instance.collection('users');
@@ -241,7 +241,6 @@ class DatabaseService {
       if (postCount > 0) {
         for (int i = postCount; i > 0; i--) {
           name2 = i.toString();
-          //ignore not_enough_positional_arguments
           postPic = await storageReference.child("Posts/$uid/$name2").getData();
           caption = ud.get(name2);
           post = new Post(
@@ -326,7 +325,8 @@ class DatabaseService {
     String petMedHis;
     String petOthers;
     try {
-      final ud = await userpets.doc(uid).collection('petlist').get().then((doc) async {
+      final ud =
+          await userpets.doc(uid).collection('petlist').get().then((doc) async {
         await Future.forEach(doc.docs, (e) async {
           petID = e.id;
           petName = e['name'];

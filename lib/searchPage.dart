@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
+import 'package:wap/messagepage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
 import 'package:wap/searchedUser.dart';
@@ -91,7 +92,10 @@ class _SearchPageState extends State<SearchPage> {
         }
         break;
       case 3:
-        {}
+        {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MessagePage()));
+        }
         break;
       case 4:
         {
@@ -114,9 +118,16 @@ class _SearchPageState extends State<SearchPage> {
         title: Text(
           "Search",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: SingleChildScrollView(

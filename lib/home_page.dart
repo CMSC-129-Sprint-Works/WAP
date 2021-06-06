@@ -3,6 +3,7 @@ import 'package:wap/classtype.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/addPost.dart';
 import 'package:wap/database.dart';
+import 'package:wap/messagepage.dart';
 import 'package:wap/profilepage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/searchPage.dart';
@@ -21,7 +22,7 @@ class _HomePageState extends State<HomePage> {
   bool fetchedPosts = false;
   ScrollController controller = ScrollController();
   bool isLoading = true;
-  //List<bool> _isChecked;
+  List<bool> _isChecked;
   List<dynamic> userID = [];
   List<Post> posts = [];
 
@@ -89,7 +90,10 @@ class _HomePageState extends State<HomePage> {
         }
         break;
       case 3:
-        {}
+        {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MessagePage()));
+        }
         break;
       case 4:
         {
@@ -105,16 +109,23 @@ class _HomePageState extends State<HomePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
+        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
         elevation: 1,
         title: Text(
           "Home",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       floatingActionButton: FloatingActionButton(

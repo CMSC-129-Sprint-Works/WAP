@@ -4,6 +4,7 @@ import 'package:wap/bookmarkPage.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/editprofile.dart';
+import 'package:wap/messagepage.dart';
 import 'package:wap/petprofilepage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
@@ -142,7 +143,10 @@ class _ProfilePageState extends State<ProfilePage> {
         {}
         break;
       case 3:
-        {}
+        {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MessagePage()));
+        }
         break;
       case 4:
         {
@@ -158,16 +162,23 @@ class _ProfilePageState extends State<ProfilePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
+        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
         elevation: 1,
         title: Text(
           "Profile",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       floatingActionButton: isLoading
@@ -186,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
               : (Container()),
       body: isLoading
           ? LinearProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>( Colors.teal[900])!)),
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal[900]),
               backgroundColor: Colors.white,
             )
           : ListView(
@@ -422,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: CircularProgressIndicator(
                                 backgroundColor: Colors.white,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                   Colors.teal[900])!)),
+                                    Colors.teal[900])),
                           )
                         : posts.isNotEmpty
                             ? getPosts(size)
@@ -747,7 +758,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: CircularProgressIndicator(
                       backgroundColor: Colors.white,
                       valueColor:
-                          AlwaysStoppedAnimation<Color>( Colors.teal[900])!)),
+                          AlwaysStoppedAnimation<Color>(Colors.teal[900])),
                 )
               : pets.isNotEmpty
                   ? Container(
@@ -780,7 +791,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         activeColor: Colors.teal,
                                         checkColor: Colors.white,
                                         value: _isChecked[index],
-                                        onChanged: (bool? value) {
+                                        onChanged: (bool value) {
                                           setState(() {
                                             _isChecked[index] = value;
                                           });
@@ -867,7 +878,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   showDialogDelete(List<int> selectedIndex) {
     bool flag;
-    flag = true;
     showDialog(
       context: context,
       builder: (context) {

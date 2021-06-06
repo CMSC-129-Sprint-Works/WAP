@@ -32,8 +32,8 @@ class _AddPostPageState extends State<AddPostPage> {
   dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool uploading = false;
 
-  //UploadTask uploadTask;
-  //double _progress = 0;
+  UploadTask uploadTask;
+  double _progress = 0;
 
   initState() {
     if (!mounted) {
