@@ -1,72 +1,50 @@
 name: Final Workflow
+
+# This workflow is triggered on pushes to the repository.
+
 on:
   push:
     branches: [dev ]
   pull_request:
     branches: [ dev ]
     
-  schedule:
-    #this triggers the workflow every day at 5:00 am and 6:00pm everyday
-    - cron:  '0 5,18 * * *'
-  create:
-  delete:
-  deployment:
+# on: push    # Default will running for every branch.
     
-# Define the Jobs we want to run as part of this Workflow
 jobs:
-  # Define our build and test Job
-   build-and-test: 
-   
-    # We want to run this Job on an Ubuntu VM 
+  build:
+    # This job will run on ubuntu virtual machine
     runs-on: ubuntu-latest
-
     steps:
-      # Checkout the repository code using V1 of the standard checkout Action
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
-       
-       # Use the standard Java Action to setup Java 
-      - uses: actions/setup-java@v1
-        with:
-          # we want the latest Java 12
-          java-version: '12.x'
-
-        # Use the community Action to install Flutter
-      - uses: subosito/flutter-action@v1
-        with:
-          # we want the stable channel
-          channel: 'stable'  
-          
-        # Get flutter packages
-      - run: flutter pub get
-       # Analyze our Dart code
-      #- run: flutter analyze
-      # Run our tests
-      #- run: flutter test
-      
-   #runs unit tests located in the project.  (- name: Assemble app debug APK)  
-     # - name: Run Unit tests
-      #  path: 
-       # run: bash ./gradlew test --stacktrace
-        #env:
-         #  WAP_API_KEY: ${{ secrets.WAP_API_KEY }}   
-      
+    
+    # Setup Java environment in order to build the Android app.
+    - uses: actions/checkout@v1
+    - uses: actions/setup-java@v1
+      with:
+        java-version: '12.x'
+    
+    # Setup the flutter environment.
+    - uses: subosito/flutter-action@v1
+      with:
+        channel: 'dev'
+        # flutter-version: '1.12.x' # you can also specify exact version of flutter
+    
+    # Get flutter dependencies.
+    - run: flutter pub get
+    
+    # Check for any formatting issues in the code.
+    - run: flutter format --set-exit-if-changed .
+    
+    # Statically analyze the Dart code for any errors.
+    - run: flutter analyze .
+    
+    # Run widget tests for our flutter project.
+    - run: flutter test
+    
+    # Build apk.
+    - run: flutter build apk
+    
     # Upload generated apk to the artifacts.
-      - uses: actions/upload-artifact@v2
-        with: 
-         name: release-apk
-         path: build/app/outputs/apk/release/app-release.apk  
-         
-         
-   Firebase:
-       runs-on: ubuntu-latest
-       
-       name: Run UI tests with Firebase Test Lab
-       steps:
-          - uses: actions/checkout@v1
-          - name: Download app APK  #download all the artifacts we generated in the previous step
-            uses: actions/download-artifact@v1
-            with:
-              name: app-debug
-             # path: build/app/outputs/apk/debug/app-debug.apk  
-     
+    - uses: actions/upload-artifact@v1
+      with:
+        name: release-apk
+        path: build/app/outputs/apk/release/app-release.apk
