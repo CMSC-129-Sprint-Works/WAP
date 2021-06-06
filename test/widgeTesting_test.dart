@@ -1,17 +1,25 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:wap/welcome.dart';
+// widget_integration_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart;
+import 'package:integration_test/integration_test.dart';
 
 void main() {
-testWidgets('WelcomePage has a title and message', (WidgetTester tester) async {
-    // Create the widget by telling the tester to build it.
-     await tester.pumpWidget(WelcomePage(title: 'T'));
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(MyApp());
 
-    // Create the Finders.
-    final titleFinder = find.text('T');
-   
-   
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
 
-    expect(titleFinder, findsOneWidget);
-    
+    // Tap the + icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
   });
 }
