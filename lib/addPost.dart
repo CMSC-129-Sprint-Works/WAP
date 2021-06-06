@@ -17,7 +17,6 @@ class AddPostPage extends StatefulWidget {
   @override
   _AddPostPageState createState() => _AddPostPageState();
 }
-
 class _AddPostPageState extends State<AddPostPage> {
   TextEditingController _captionController = TextEditingController();
   bool imageSelected = false;
