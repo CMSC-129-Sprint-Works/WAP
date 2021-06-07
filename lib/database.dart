@@ -325,6 +325,7 @@ class DatabaseService {
     String petMedHis;
     String petOthers;
     try {
+      // ignore: unused_local_variable
       final ud =
           await userpets.doc(uid).collection('petlist').get().then((doc) async {
         await Future.forEach(doc.docs, (e) async {
@@ -365,6 +366,7 @@ class DatabaseService {
   removePet(String id) async {
     try {
       final ud = userpets.doc(uid);
+      // ignore: unused_local_variable
       final storageReference = await FirebaseStorage.instance
           .ref()
           .child("Pet Profile Pictures/$id")
