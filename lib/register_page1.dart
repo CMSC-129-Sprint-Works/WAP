@@ -365,7 +365,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
-                  key: Key("con password"),
+                  key: Key("conPassword"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -409,6 +409,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
         Text('By clicking Register, you accept the ',
             style: TextStyle(fontFamily: 'Montserrat')),
         TextButton(
+            key: Key("Terms"),
             onPressed: () {
               createTC(context);
               //TermsAndConditions();

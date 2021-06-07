@@ -12,6 +12,11 @@ void main() {
     "full app test",
     (tester) async {
       await tester.pumpWidget(MyApp());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Register an Account'), findsOneWidget);
+      expect(find.text('Register'), findsOneWidget);
+      expect(find.text('OK'), findsWidgets);
 
       //for first name, last name, username, password,and confirm password textformfields
       final firstName = 'Rayna';
@@ -28,9 +33,10 @@ void main() {
 
       final passWord = '1234567';
       await tester.enterText(find.byKey(Key("password")), passWord);
+      expect(find.byIcon(Icons.lock), findsOneWidget);
 
       final conPassWord = '1234567';
-      await tester.enterText(find.byKey(Key("con password")), conPassWord);
+      await tester.enterText(find.byKey(Key("conPassword")), conPassWord);
 
       //expected results
       expect(find.text(firstName), findsOneWidget);
@@ -38,6 +44,11 @@ void main() {
       expect(find.text(userName), findsOneWidget);
       expect(find.text(passWord), findsOneWidget);
       expect(find.text(conPassWord), findsOneWidget);
+
+      //for terms and conditions
+      final Finder termsAndConditions = find.byKey(Key('Terms'));
+      await tester.tap(termsAndConditions);
+      print("termsAndConditions tapped");
     },
   );
 }
@@ -61,4 +72,31 @@ void main() {
       final emailAdd = find.byKey(Key("emailAdd"));
       final passWord = find.byKey(Key("password"));
       final conPassWord = find.byKey(Key("con password"));
+*/
+//for Tapped Button
+/*
+  final Finder signInEmailField = find.byKey(Key('signInEmailField'));
+  final Finder signInSaveButton = find.byKey(Key('signInSaveButton'));
+
+  await tester.pumpWidget(MyApp());
+
+
+  await tester.pumpAndSettle();
+
+  await tester.enterText(signInEmailField, "");
+
+  await tester.tap(signInSaveButton);
+
+  await tester.pumpAndSettle(Duration(seconds: 1));
+  
+  expect(
+      find.byWidgetPredicate((widget) =>
+      widget is Text &&
+          widget.data.contains("Enter an email")  ),
+      findsOneWidget);
+
+  await tester.pumpAndSettle(Duration(seconds: 1));
+});
+
+
 */
