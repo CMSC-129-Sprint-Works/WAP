@@ -132,7 +132,7 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
       typeDotAnimation: dotSliderAnimation.SIZE_TRANSITION,
       listCustomTabs: this.renderListCustomTabs(),
       scrollPhysics: BouncingScrollPhysics(),
-      shouldHideStatusBar: false,
+      // shouldHideStatusBar: false,
       onDonePress: () {
         Navigator.of(context).pushReplacement(_createRoute());
       },

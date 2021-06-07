@@ -16,8 +16,8 @@ void main() {
           findsOneWidget); //checking the existence of arrowBack (I found 1)
 
       final Finder petProfilePic = find.byKey(Key('petProfilePic'));
-      tester.element(petProfilePic);
-      expect(petProfilePic, null);
+      await tester.tap(petProfilePic);
+      expect(petProfilePic, findsOneWidget);
 
       expect(find.text('Hi! I am'), findsOneWidget); //finder sa text
 

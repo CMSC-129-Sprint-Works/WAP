@@ -87,7 +87,7 @@
     },
     {
       "name": "cupertino_icons",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/cupertino_icons-1.0.2",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/cupertino_icons-1.0.3",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -117,7 +117,7 @@
     },
     {
       "name": "ffi",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/ffi-1.0.0",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/ffi-1.1.2",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -273,9 +273,9 @@
     },
     {
       "name": "intro_slider",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/intro_slider-2.3.4",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/intro_slider-2.4.3",
       "packageUri": "lib/",
-      "languageVersion": "2.1"
+      "languageVersion": "2.12"
     },
     {
       "name": "js",
@@ -315,7 +315,7 @@
     },
     {
       "name": "path_provider_windows",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider_windows-2.0.0",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/path_provider_windows-2.0.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -369,13 +369,13 @@
     },
     {
       "name": "responsive_framework",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/responsive_framework-0.1.0",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/responsive_framework-0.1.1",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
     {
       "name": "shared_preferences",
-      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-2.0.5",
+      "rootUri": "file:///C:/flutter/.pub-cache/hosted/pub.dartlang.org/shared_preferences-2.0.6",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },
@@ -500,7 +500,7 @@
       "languageVersion": "2.7"
     }
   ],
-  "generated": "2021-06-07T09:43:31.974460Z",
+  "generated": "2021-06-07T09:51:34.712966Z",
   "generator": "pub",
   "generatorVersion": "2.12.3"
 }
