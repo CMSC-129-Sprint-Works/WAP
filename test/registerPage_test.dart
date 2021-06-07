@@ -14,10 +14,20 @@ void main() {
       await tester.pumpWidget(MyApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('Register an Account'), findsOneWidget);
-      expect(find.text('Register'), findsOneWidget);
+      expect(find.text('Register an Account'), findsWidgets);
+      expect(find.text('Register'), findsWidgets);
       expect(find.text('OK'), findsWidgets);
+      expect(find.byKey(Key('institutionName')),
+          findsOneWidget); //finding the Institution Name
 
+      //get Account type personal/institutional
+      final Finder personalAccount = find.byKey(Key('Personal'));
+      await tester.tap(personalAccount);
+
+      final Finder institutionalAccount = find.byKey(Key('Institution'));
+      await tester.tap(institutionalAccount);
+
+      //--------------------------------------------------------------------------
       //for first name, last name, username, password,and confirm password textformfields
       final firstName = 'Rayna';
       await tester.enterText(find.byKey(Key('first name')), firstName);
@@ -33,7 +43,8 @@ void main() {
 
       final passWord = '1234567';
       await tester.enterText(find.byKey(Key("password")), passWord);
-      expect(find.byIcon(Icons.lock), findsOneWidget);
+      //looking for lock icons
+      expect(find.byIcon(Icons.lock), findsWidgets);
 
       final conPassWord = '1234567';
       await tester.enterText(find.byKey(Key("conPassword")), conPassWord);
@@ -41,14 +52,17 @@ void main() {
       //expected results
       expect(find.text(firstName), findsOneWidget);
       expect(find.text(lastname), findsOneWidget);
-      expect(find.text(userName), findsOneWidget);
-      expect(find.text(passWord), findsOneWidget);
-      expect(find.text(conPassWord), findsOneWidget);
+      expect(find.text(userName), findsWidgets);
+      expect(find.text(emailAdd), findsWidgets);
+      expect(find.text(passWord), findsWidgets);
+      expect(find.text(conPassWord), findsWidgets);
+      //--------------------------------------------------------------------------
 
-      //for terms and conditions
+      //check terms and conditions, both institutional and personal accounts
       final Finder termsAndConditions = find.byKey(Key('Terms'));
       await tester.tap(termsAndConditions);
-      print("termsAndConditions tapped");
+      // print("termsAndConditions tapped");
+      expect(find.text('Terms and Conditions of WAP App'), findsWidgets);
     },
   );
 }

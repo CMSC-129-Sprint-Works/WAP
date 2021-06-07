@@ -188,6 +188,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
               child: Column(children: <Widget>[
                 TextFormField(
                   //INSTITUTION NAME
+                  key: Key("institutionName"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Name of Institution is required";
@@ -217,6 +218,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //USERNAME
+                  key: Key("username"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -249,6 +251,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //EMAIL
+                  key: Key("emailAdd"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Email is required";
@@ -280,6 +283,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
+                  key: Key("password"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -312,6 +316,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
+                  key: Key("conPassword"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -355,6 +360,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
         Text('By clicking Register, you accept the ',
             style: TextStyle(fontFamily: 'Montserrat')),
         TextButton(
+            key: Key("Terms"),
             onPressed: () {
               //TermsAndConditions();
               createTC(context);

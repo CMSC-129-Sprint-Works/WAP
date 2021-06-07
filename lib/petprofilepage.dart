@@ -64,6 +64,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                     alignment: Alignment.topLeft,
                   ),
                   Container(
+                    key: Key("petProfilePic"),
                     margin: EdgeInsets.only(top: 40),
                     alignment: Alignment.center,
                     height: MediaQuery.of(context).size.height / 2.25,
@@ -150,6 +151,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 5),
                                   Text("Adopt",
+                                      key: Key("adoptButton"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -197,6 +199,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 8),
                                   Text("Save",
+                                      key: Key("saveButton"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -247,6 +250,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                 SizedBox(width: 15),
                                 Expanded(
                                   child: Text("Edit",
+                                      key: Key("edit"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -271,6 +275,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("About Me",
+                              key: Key("aboutMe"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -287,6 +292,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Special Needs",
+                              key: Key("needs"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -303,6 +309,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Characteristics",
+                              key: Key("char"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -379,6 +386,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Breed: ",
+                    key: Key("breed"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -394,6 +402,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Age: ",
+                    key: Key("age"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -409,6 +418,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Sex: ",
+                    key: Key("sex"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -424,6 +434,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Medical History: ",
+                    key: Key("medicalHistory"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -513,6 +524,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                           children: [
                             SizedBox(height: 50),
                             Text("Saved in Bookmarks",
+                                key: Key("savedInBookmarks"),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             MaterialButton(

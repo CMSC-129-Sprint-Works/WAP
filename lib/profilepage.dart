@@ -307,6 +307,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Container(
                         child: Text(
                           'Edit Profile',
+                          key: Key("editProfile"),
                           style: TextStyle(
                             fontSize: 15,
                             fontFamily: 'Montserrat',
@@ -561,6 +562,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
+                          key: Key("nickname"),
                         ),
                       ),
                     ),
@@ -596,6 +598,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
+                          key: Key("address"),
                         ),
                       ),
                     ),
@@ -631,6 +634,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
+                          key: Key("contact"),
                         ),
                       ),
                     ),
@@ -659,13 +663,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 15),
-                      child: Text(
-                        "Email Address",
-                        style: TextStyle(
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      ),
+                      child: Text("Email Address",
+                          style: TextStyle(
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18),
+                          key: Key("emailAddProfilePage")),
                     ),
                   ],
                 ),
