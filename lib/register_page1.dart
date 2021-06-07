@@ -199,6 +199,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
               child: Column(children: <Widget>[
                 TextFormField(
                   //FIRST NAME
+                  key: Key("first name"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -231,6 +232,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //LAST NAME
+                  key: Key("last name"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -263,6 +265,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //USERNAME
+                  key: Key("username"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -295,6 +298,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //EMAIL
+                  key: Key("emailAdd"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Email is required";
@@ -326,6 +330,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
+                  key: Key("password"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -360,6 +365,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
+                  key: Key("con password"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
