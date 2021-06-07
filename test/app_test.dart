@@ -28,7 +28,6 @@ void main() {
 
       final passWord = '1234567';
       await tester.enterText(find.byKey(Key("password")), passWord);
-      tester.testTextInput;
 
       final conPassWord = '1234567';
       await tester.enterText(find.byKey(Key("con password")), conPassWord);
@@ -38,7 +37,6 @@ void main() {
       expect(find.text(lastname), findsOneWidget);
       expect(find.text(userName), findsOneWidget);
       expect(find.text(passWord), findsOneWidget);
-
       expect(find.text(conPassWord), findsOneWidget);
     },
   );
