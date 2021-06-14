@@ -116,6 +116,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50)),
                 child: Text("Submit",
+                    key: Key('submitButton1'),
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
@@ -149,7 +150,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
               key: _key,
               child: Column(children: <Widget>[
                 TextFormField(
-                  //USERNAME
+                  //Nickname
+                  key: Key('nickname1'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "This field is required";
@@ -177,7 +179,6 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     prefixIcon: Icon(Icons.person_rounded, color: Colors.white),
                   ),
-                  key: Key('nickname1'),
                 ),
                 SizedBox(height: 10),
                 TextFormField(
@@ -239,6 +240,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 Container(
                     width: MediaQuery.of(context).size.width,
                     child: TextFormField(
+                      key: Key('description'),
                       maxLines: 2,
                       maxLength: 60,
                       validator: (value) {

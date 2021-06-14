@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wap/main.dart';
 
 void main() {
@@ -39,8 +40,14 @@ void main() {
       // Expect to find the item on screen after clicking Skip
       expect(skipButton3, findsOneWidget);
 
+      final Finder submitButton = find.byKey(Key(' submitButton1'));
+      await tester.tap(submitButton);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(submitButton, findsNothing);
+
       //--------------------------------------------------------------------------
-      //for nickname, address, contact, emailAdd textformfields
+      //for nickname, address, contact,and description textformfields
       final nickname = 'ambre';
       await tester.enterText(find.byKey(Key('nickname1')), nickname);
       expect(find.text(nickname), findsOneWidget);
@@ -53,9 +60,12 @@ void main() {
       await tester.enterText(find.byKey(Key('contact')), contact);
       expect(find.text(contact), findsOneWidget);
 
-      final emailAdd = 'amber1@gmail.com';
-      await tester.enterText(find.byKey(Key('emailAddProfilePage')), emailAdd);
-      expect(find.text(emailAdd), findsOneWidget);
+      final descript = 'I am a cat lover.';
+      await tester.enterText(find.byKey(Key('description')), descript);
+      expect(find.text(descript), findsOneWidget);
+
+      //for profile picture
+
       //--------------------------------------------------------------------------
     },
   );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wap/main.dart';
 
 void main() {
@@ -31,20 +32,21 @@ void main() {
       await tester.tap(saveButton);
       expect(saveButton, findsOneWidget);
 
-      //for save button
+      //for edit button
       final Finder editButton = find.byKey(Key('edit'));
       await tester.tap(editButton);
       expect(editButton, findsOneWidget);
 
-      //for save button
+      //for aboutMe button
       final Finder aboutMeButton = find.byKey(Key('aboutMe'));
       await tester.tap(aboutMeButton);
       expect(aboutMeButton, findsOneWidget);
 
-      //for save in bookmarks
+      //for save in bookmarks button
       final Finder saved = find.byKey(Key('savedInBookmarks'));
       await tester.tap(saved);
-      expect(saved, findsOneWidget);
+      expect(find.text('Done'),
+          findsOneWidget); //naay Done nga word mugawas after clicking savedInBookmarks
 
       //--------------------------------------------------------------------------
       //All About Me fields
