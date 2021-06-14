@@ -168,6 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
         elevation: 1,
         title: Text(
           "Profile",
+          key: Key('Profile1'),
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Montserrat',
