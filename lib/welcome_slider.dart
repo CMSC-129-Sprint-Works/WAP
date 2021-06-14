@@ -117,14 +117,19 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
   Widget build(BuildContext context) {
     return IntroSlider(
       backgroundColorAllSlides: Colors.teal[400],
-      renderSkipBtn: Text("Skip"),
+      renderSkipBtn: Text(
+        "Skip",
+        key: Key("clickSkip1"),
+      ),
       renderNextBtn: Text(
         "Next",
         style: TextStyle(color: Colors.green[700]),
+        key: Key("clickNext1"),
       ),
       renderDoneBtn: Text(
         "Done",
         style: TextStyle(color: Colors.green[700]),
+        key: Key("clickDone1"),
       ),
       colorDoneBtn: Colors.white,
       colorActiveDot: Colors.white,

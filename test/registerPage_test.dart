@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:wap/main.dart';
+import 'package:wap/register_page1.dart';
 //import 'package:wap/register_page1.dart'; //problem: unsaon pag access ana nga mga button :( ani nga page nga wala man sila naka individually naa sa class
 
+PersonalRegisterPage register;
 //PersonalRegisterPage
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -23,31 +25,39 @@ void main() {
       //get Account type personal/institutional
       final Finder personalAccount = find.byKey(Key('Personal'));
       await tester.tap(personalAccount);
+      expect(personalAccount, findsOneWidget);
 
       final Finder institutionalAccount = find.byKey(Key('Institution'));
       await tester.tap(institutionalAccount);
+      expect(institutionalAccount, findsOneWidget);
 
       //--------------------------------------------------------------------------
-      //for first name, last name, username, password,and confirm password textformfields
+      //for first name, last name, username, password,and confirm password textformfields using find.byKey
       final firstName = 'Rayna';
-      await tester.enterText(find.byKey(Key('first name')), firstName);
+      await tester.enterText(find.byKey(Key('first name1')), firstName);
 
       final lastname = 'Baoy';
-      await tester.enterText(find.byKey(Key("last name")), lastname);
+      await tester.enterText(find.byKey(Key("last name1")), lastname);
 
       final userName = 'Amber';
-      await tester.enterText(find.byKey(Key("username")), userName);
+      await tester.enterText(find.byKey(Key("username1")), userName);
 
       final emailAdd = 'amber@gmail.com';
-      await tester.enterText(find.byKey(Key("emailAdd")), emailAdd);
+      await tester.enterText(find.byKey(Key("emailAdd1")), emailAdd);
+      // Enter 'hi' into the TextField.
+
+      //unsaon pag call sa _userRegister nga method from register_page1.dart?
+      //   var actual = register._RegisterPageState._userRegister(emailAdd);    (checks if username = taken)
+      //   var expected = true;
+      //    expect(find.text(actual, expected);
 
       final passWord = '1234567';
-      await tester.enterText(find.byKey(Key("password")), passWord);
+      await tester.enterText(find.byKey(Key("password1")), passWord);
       //looking for lock icons
       expect(find.byIcon(Icons.lock), findsWidgets);
 
       final conPassWord = '1234567';
-      await tester.enterText(find.byKey(Key("conPassword")), conPassWord);
+      await tester.enterText(find.byKey(Key("conPassword1")), conPassWord);
 
       //expected results
       expect(find.text(firstName), findsOneWidget);
@@ -62,12 +72,13 @@ void main() {
       final Finder termsAndConditions = find.byKey(Key('Terms'));
       await tester.tap(termsAndConditions);
       // print("termsAndConditions tapped");
-      expect(find.text('Terms and Conditions of WAP App'), findsWidgets);
+      expect(find.text('Terms and Conditions of WAP App'), findsOneWidget);
     },
   );
 }
 
-/*      app.main();
+/*  EXCLUDED!!!   
+     app.main();
       tester.pumpAndSettle();
 
       //finders for email, password, and login

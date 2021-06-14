@@ -129,6 +129,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     MaterialPageRoute(builder: (context) => ProfilePage()));
               },
               child: Text("Skip",
+                  key: Key('clickSkip2'),
                   style: TextStyle(
                       color: Colors.white,
                       fontFamily: 'Montserrat',
@@ -176,9 +177,11 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                         EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     prefixIcon: Icon(Icons.person_rounded, color: Colors.white),
                   ),
+                  key: Key('nickname1'),
                 ),
                 SizedBox(height: 10),
                 TextFormField(
+                  key: Key('Addrress1'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "This field is required";

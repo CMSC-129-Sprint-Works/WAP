@@ -156,6 +156,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
                     MaterialPageRoute(builder: (context) => ProfilePage()));
               },
               child: Text("Skip",
+                  key: Key('clickSkip3'),
                   style: TextStyle(
                       color: Colors.white,
                       fontFamily: 'Montserrat',

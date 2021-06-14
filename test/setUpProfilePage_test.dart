@@ -12,7 +12,8 @@ void main() {
       await tester.pumpWidget(MyApp());
       await tester.pumpAndSettle();
 
-      expect(find.text('Profile'), findsWidgets); //finding the word "Profile"
+      final Finder profile1 = find.byKey(Key('Profile1'));
+      expect(profile1, findsWidgets); //finding the word "Profile"
 
       //clicking edit profile icon
       final Finder editProfileButton = find.byKey(Key('editProfile'));
@@ -22,22 +23,38 @@ void main() {
       expect(find.byIcon(Icons.grid_on_rounded),
           findsWidgets); //checking the existence of grid_on_roundeds (I found 2)
 
+      //clicking skip Button in edit profile page of the Personal user account
+      final Finder skipButton2 = find.byKey(Key('clickSkip2'));
+      await tester.tap(skipButton2);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      // Expect to find the item on screen after clicking Skip
+      expect(skipButton2, findsOneWidget);
+
+      //clicking skip Button in edit profile page of the Institution user account
+      final Finder skipButton3 = find.byKey(Key('clickSkip3'));
+      await tester.tap(skipButton3);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      // Expect to find the item on screen after clicking Skip
+      expect(skipButton3, findsOneWidget);
+
       //--------------------------------------------------------------------------
       //for nickname, address, contact, emailAdd textformfields
       final nickname = 'ambre';
-      await tester.enterText(find.byKey(Key("nickname")), nickname);
+      await tester.enterText(find.byKey(Key('nickname1')), nickname);
       expect(find.text(nickname), findsOneWidget);
 
       final address = 'cebu';
-      await tester.enterText(find.byKey(Key("address")), address);
+      await tester.enterText(find.byKey(Key('address1')), address);
       expect(find.text(address), findsOneWidget);
 
       final contact = '09364455431';
-      await tester.enterText(find.byKey(Key("contact")), contact);
+      await tester.enterText(find.byKey(Key('contact')), contact);
       expect(find.text(contact), findsOneWidget);
 
       final emailAdd = 'amber1@gmail.com';
-      await tester.enterText(find.byKey(Key("emailAddProfilePage")), emailAdd);
+      await tester.enterText(find.byKey(Key('emailAddProfilePage')), emailAdd);
       expect(find.text(emailAdd), findsOneWidget);
       //--------------------------------------------------------------------------
     },

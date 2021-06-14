@@ -199,7 +199,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
               child: Column(children: <Widget>[
                 TextFormField(
                   //FIRST NAME
-                  key: Key("first name"),
+                  key: Key("first name1"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -232,7 +232,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //LAST NAME
-                  key: Key("last name"),
+                  key: Key("last name1"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -265,7 +265,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //USERNAME
-                  key: Key("username"),
+                  key: Key("username1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -286,7 +286,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Username',
+                    hintText: 'Username1',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
@@ -298,7 +298,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //EMAIL
-                  key: Key("emailAdd"),
+                  key: Key("emailAdd1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Email is required";
@@ -330,7 +330,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
-                  key: Key("password"),
+                  key: Key("password1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -365,7 +365,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
-                  key: Key("conPassword"),
+                  key: Key("conPassword1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
