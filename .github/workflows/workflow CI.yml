@@ -1,14 +1,14 @@
 name: Final Workflow
 on:
   push:
-    branches: [dev]
+    branches: [ master ]
   pull_request:
-    branches: [dev]
+    branches: [ master ]
     
 # Define the Jobs we want to run as part of this Workflow
 jobs:
   # Define our build and test Job
-   build: 
+   build-and-test: 
    
     # We want to run this Job on an Ubuntu VM 
     runs-on: ubuntu-latest
@@ -24,10 +24,7 @@ jobs:
           # we want the latest Java 12
           java-version: '12.x'
 
-   fluter_test:
-    runs-on: ubuntu-latest
         # Use the community Action to install Flutter
-    steps:
       - uses: subosito/flutter-action@v1
         with:
           # we want the stable channel
@@ -35,36 +32,7 @@ jobs:
           
         # Get flutter packages
       - run: flutter pub get
-    # Check for any formatting issues in the code.
-      - run: flutter format --set-exit-if-changed .
-    
-    # Statically analyze the Dart code for any errors.
-      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
-    
-    # Run widget tests for our flutter project.
+       # Analyze our Dart code
+      - run: flutter analyze
+      # Run our tests
       - run: flutter test
-    
-    # Build apk.
-      - run: flutter build apk
-    
-    # Upload generated apk to the artifacts.
-      - uses: actions/upload-artifact@v1
-        with:
-          name: release-apk
-          path: build/app/outputs/apk/release/app-release.apk
-
-#running integration test
-      - name: Run Flutter Driver tests
-        #GitHub Action for installing, configuring and running Android Emulators (work only Mac OS)
-        #https://github.com/ReactiveCircus/android-emulator-runner
-        uses: reactivecircus/android-emulator-runner@v1
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: flutter drive --driver=test_driver/integration_test_driver.dart --target=integration_test/app_test.dart       
-
-
-
-
