@@ -33,6 +33,6 @@ jobs:
         # Get flutter packages
       - run: flutter pub get
        # Analyze our Dart code
-      - run: flutter analyze
+     # - run: flutter analyze
       # Run our tests
       - run: flutter test
