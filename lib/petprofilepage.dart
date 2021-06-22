@@ -1,18 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:random_string/random_string.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wap/applicationRequest.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
-// ignore: unused_import
-import 'package:wap/settingsPage.dart';
-// ignore: unused_import
-import 'package:wap/home_page.dart';
-// ignore: unused_import
-import 'package:wap/searchPage.dart';
 import 'package:wap/classtype.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
   final bool publicViewType;
-  const PetProfilePage({@required this.pet, @required this.publicViewType});
+  final String ownerID;
+  const PetProfilePage(
+      {@required this.pet, @required this.publicViewType, this.ownerID});
   @override
   _PetProfilePageState createState() => _PetProfilePageState();
 }
@@ -21,6 +20,32 @@ class _PetProfilePageState extends State<PetProfilePage> {
   int selectedIndex = 0;
   final FirebaseAuth auth = FirebaseAuth.instance;
   ScrollController controller = ScrollController();
+  String myFirstName, myLastName, myUserName, username1;
+
+  initState() {
+    super.initState();
+    ;
+  }
+
+  getMyData() async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    myFirstName = shared.getString('firstname');
+    myLastName = shared.getString('lastname');
+    myUserName = shared.getString('username');
+
+    final dbGet = DatabaseService(uid: widget.ownerID);
+    dynamic holder = await dbGet.getUsername();
+    username1 = holder.toString();
+  }
+
+  getChatRoomID(String u1, String u2) {
+    String petid = widget.pet.petID;
+    if (u1.substring(0, 1).codeUnitAt(0) > u2.substring(0, 1).codeUnitAt(0)) {
+      return "$u2\_$u1\_$petid";
+    } else {
+      return "$u1\_$u2\_$petid";
+    }
+  }
 
   savePet() async {
     final db = DatabaseService(uid: auth.currentUser.uid);
@@ -32,16 +57,23 @@ class _PetProfilePageState extends State<PetProfilePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
+        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
         elevation: 1,
         title: Text(
           "Pet Profile",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
         leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -64,7 +96,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                     alignment: Alignment.topLeft,
                   ),
                   Container(
-                    key: Key("petProfilePic"),
+		    key: Key("petProfilePic"),
                     margin: EdgeInsets.only(top: 40),
                     alignment: Alignment.center,
                     height: MediaQuery.of(context).size.height / 2.25,
@@ -119,6 +151,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                         GestureDetector(
                           onTap: () {
                             print("Adopt");
+                            createAdoption(context);
                           },
                           child: Container(
                               padding: EdgeInsets.only(left: 10, right: 5),
@@ -151,7 +184,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 5),
                                   Text("Adopt",
-                                      key: Key("adoptButton"),
+				      key: Key("adoptButton"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -199,7 +232,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 8),
                                   Text("Save",
-                                      key: Key("saveButton"),
+				      key: Key("saveButton"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -250,7 +283,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                 SizedBox(width: 15),
                                 Expanded(
                                   child: Text("Edit",
-                                      key: Key("edit"),
+	   			      key: Key("edit"),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -275,7 +308,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("About Me",
-                              key: Key("aboutMe"),
+			      key: Key("aboutMe"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -292,7 +325,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Special Needs",
-                              key: Key("needs"),
+			      key: Key("needs"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -309,7 +342,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Characteristics",
-                              key: Key("char"),
+			      key: Key("char"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -386,7 +419,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Breed: ",
-                    key: Key("breed"),
+		    key: Key("breed"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -402,7 +435,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Age: ",
-                    key: Key("age"),
+		    key: Key("age"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -418,8 +451,8 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Sex: ",
-                    key: Key("sex"),
-                    style: TextStyle(
+		     key: Key("sex"),
+		     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
                         fontWeight: FontWeight.bold),
@@ -434,7 +467,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Medical History: ",
-                    key: Key("medicalHistory"),
+		    key: Key("medicalHistory"),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -524,7 +557,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                           children: [
                             SizedBox(height: 50),
                             Text("Saved in Bookmarks",
-                                key: Key("savedInBookmarks"),
+				key: Key("savedInBookmarks"),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             MaterialButton(
@@ -550,6 +583,187 @@ class _PetProfilePageState extends State<PetProfilePage> {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50)),
                               child: Image.asset('assets/images/wink.png')),
+                        ))
+                  ]),
+            ));
+      },
+      barrierDismissible: true,
+    );
+  }
+
+  createPending(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text("Application Pending",
+                                style: TextStyle(fontFamily: 'Montserrat')),
+                            SizedBox(height: 20),
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Okay",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 55,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child: Image.asset('assets/images/wink.png')),
+                        ))
+                  ]),
+            ));
+      },
+      barrierDismissible: true,
+    );
+  }
+
+  createAdoption(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text("Do you want to send an adoption application?",
+                                style: TextStyle(fontFamily: 'Montserrat')),
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                MaterialButton(
+                                    color: Colors.teal[100],
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100)),
+                                    child: Text("Yes",
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat')),
+                                    onPressed: () async {
+                                      await getMyData();
+                                      dynamic chatroomID = await getChatRoomID(
+                                          myUserName, username1);
+                                      Map<String, dynamic> chatRoomInfoMap = {
+                                        "pet name": widget.pet.petName,
+                                        "pet ID": widget.pet.petID,
+                                        "application status": "Pending",
+                                        "users": [myUserName, username1],
+                                      };
+                                      if (await DatabaseService()
+                                              .createApplicationRequest(
+                                                  chatroomID,
+                                                  chatRoomInfoMap) !=
+                                          "existing") {
+                                        var lastMessageTs = DateTime.now();
+                                        Map<String, dynamic> messageInfoMap = {
+                                          "message": myUserName +
+                                              " sent an adoption application request",
+                                          "sentBy": myUserName,
+                                          "ts": lastMessageTs,
+                                          "message status": true,
+                                        };
+                                        String messID = randomAlphaNumeric(12);
+                                        await DatabaseService()
+                                            .addMessage2(chatroomID, messID,
+                                                messageInfoMap)
+                                            .then((value) {
+                                          Map<String, dynamic>
+                                              lastMessageInfoMap = {
+                                            "lastMessageSeen": false,
+                                            "lastMessage": myUserName +
+                                                " sent an adoption application request",
+                                            "lastMessageSendTs": lastMessageTs,
+                                            "lastMessageSentby": myUserName,
+                                          };
+
+                                          DatabaseService()
+                                              .updateLastMessageSent2(
+                                                  chatroomID,
+                                                  lastMessageInfoMap);
+                                        });
+                                        Navigator.pop(context);
+                                        Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ApplicationRequest(
+                                                      petID: widget.pet.petID,
+                                                      ownerID: widget.ownerID,
+                                                      petName:
+                                                          widget.pet.petName,
+                                                    )));
+                                      } else {
+                                        Navigator.pop(context);
+                                        createPending(context);
+                                      }
+                                    }),
+                                MaterialButton(
+                                    color: Colors.teal[100],
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100)),
+                                    child: Text("No",
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat')),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    })
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 55,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child:
+                                  Image.asset('assets/images/adoptButton.png')),
                         ))
                   ]),
             ));

@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:wap/database.dart';
@@ -20,6 +22,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
   bool accepted = false;
   bool usernameTaken = false;
   bool emailTaken = false;
+  bool registering = false;
   String pssword;
   String errorMsg;
   final _key = GlobalKey<FormState>();
@@ -54,6 +57,10 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
             _newemailController.text,
             _newfirstnameController.text,
             _newlastnameController.text);
+        SharedPreferences shared = await SharedPreferences.getInstance();
+        shared.setString("firstname", _newfirstnameController.text);
+        shared.setString("lastname", _newlastnameController.text);
+        shared.setString("username", _newusernameController.text);
         Navigator.pop(context);
         Navigator.pop(context);
         Navigator.pushReplacement(
@@ -157,30 +164,50 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
             SizedBox(height: 20),
             readTC(),
             SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 100),
-              child: Container(
-                padding: EdgeInsets.only(top: 3, left: 3),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 50,
-                  onPressed: () async {
-                    if (_key.currentState.validate()) {
-                      await _registerUser();
-                    }
-                  },
-                  color: Colors.teal[100],
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)),
-                  child: Text("Register",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          fontFamily: 'Montserrat')),
-                ),
-              ),
-            ),
+            registering
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 150),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 3, left: 3),
+                      child: MaterialButton(
+                          minWidth: double.infinity,
+                          height: 50,
+                          onPressed: () {},
+                          color: Colors.teal[100],
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50)),
+                          child: SpinKitThreeBounce(
+                              color: Colors.white, size: 20)),
+                    ),
+                  )
+                : Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 100),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 3, left: 3),
+                      child: MaterialButton(
+                        minWidth: double.infinity,
+                        height: 50,
+                        onPressed: () async {
+                          if (_key.currentState.validate()) {
+                            await _registerUser();
+                            setState(() {
+                              registering = true;
+                            });
+                          }
+                        },
+                        color: Colors.teal[100],
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Text("Register",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontFamily: 'Montserrat')),
+                      ),
+                    ),
+                  ),
             SizedBox(height: 20),
           ]),
         ),
@@ -199,7 +226,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
               child: Column(children: <Widget>[
                 TextFormField(
                   //FIRST NAME
-                  key: Key("first name1"),
+		  key: Key("first name1"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -232,7 +259,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //LAST NAME
-                  key: Key("last name1"),
+		  key: Key("last name1"),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value.isEmpty) {
@@ -265,7 +292,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //USERNAME
-                  key: Key("username1"),
+		  key: Key("username1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -286,7 +313,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                         borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
-                    hintText: 'Username1',
+                    hintText: 'Username',
                     hintStyle: TextStyle(
                         color: Colors.black38, fontFamily: 'Montserrat'),
                     contentPadding:
@@ -298,7 +325,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //EMAIL
-                  key: Key("emailAdd1"),
+		  key: Key("emailAdd1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Email is required";
@@ -330,7 +357,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
-                  key: Key("password1"),
+		  key: Key("password1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -365,7 +392,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
-                  key: Key("conPassword1"),
+		  key: Key("conPassword1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -409,7 +436,7 @@ class _RegisterPageState extends State<PersonalRegisterPage> {
         Text('By clicking Register, you accept the ',
             style: TextStyle(fontFamily: 'Montserrat')),
         TextButton(
-            key: Key("Terms"),
+	    key: Key("Terms"),
             onPressed: () {
               createTC(context);
               //TermsAndConditions();

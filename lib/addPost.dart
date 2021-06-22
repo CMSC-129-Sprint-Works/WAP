@@ -17,6 +17,7 @@ class AddPostPage extends StatefulWidget {
   @override
   _AddPostPageState createState() => _AddPostPageState();
 }
+
 class _AddPostPageState extends State<AddPostPage> {
   TextEditingController _captionController = TextEditingController();
   bool imageSelected = false;
@@ -25,15 +26,14 @@ class _AddPostPageState extends State<AddPostPage> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final picker = ImagePicker();
   String fileName;
-  var _imageFile;
+  File _imageFile;
   PickedFile image;
   String thisname = "WAP USER";
   dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool uploading = false;
+  bool successUpload = false;
 
-  UploadTask uploadTask;
-  // ignore: unused_field
-  double _progress = 0;
+  var uploadTask;
 
   initState() {
     if (!mounted) {
@@ -100,15 +100,14 @@ class _AddPostPageState extends State<AddPostPage> {
     final dbGet = DatabaseService(uid: auth.currentUser.uid);
 
     if (_imageFile != null) {
+      String uniqueID = _imageFile.path.split('/').last;
+      uniqueID = uniqueID.substring(0, uniqueID.indexOf('.'));
       Reference storageReference =
-          FirebaseStorage.instance.ref().child("Posts/$fileName/$postNum");
+          FirebaseStorage.instance.ref().child("User Posts/$uniqueID");
       uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
-            dbGet.addPost(_captionController.text),
-            widget.homePage
-                ? Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HomePage()))
-                : Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()))
+            dbGet.addPost(_captionController.text, uniqueID),
+            successUpload = true,
+            showDialogDone()
           });
     }
   }
@@ -215,10 +214,19 @@ class _AddPostPageState extends State<AddPostPage> {
                           padding: EdgeInsets.symmetric(horizontal: 50),
                           child: MaterialButton(
                             onPressed: () async {
-                              updateProfile();
-                              setState(() {
-                                uploading = true;
-                              });
+                              if (imageSelected == true) {
+                                updateProfile();
+                                setState(() {
+                                  uploading = true;
+                                });
+                              } else {
+                                final snackBar = SnackBar(
+                                    backgroundColor: Colors.teal,
+                                    content:
+                                        Text("No photo selected for post."));
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              }
                             },
                             minWidth: double.infinity,
                             shape: RoundedRectangleBorder(
@@ -243,7 +251,7 @@ class _AddPostPageState extends State<AddPostPage> {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 50),
                           child: MaterialButton(
-                            onPressed: () async {},
+                            onPressed: () {},
                             minWidth: double.infinity,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50)),
@@ -319,6 +327,74 @@ class _AddPostPageState extends State<AddPostPage> {
               TextPosition(offset: _captionController.text.length));
         });
       },
+    );
+  }
+
+  showDialogDone() {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            successUpload
+                                ? Text("Successfully uploaded post.",
+                                    style: TextStyle(fontFamily: 'Montserrat'))
+                                : Text(
+                                    "Failed to upload post. Please check your connection and try again.",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                            SizedBox(height: 20),
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Ok",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  widget.homePage
+                                      ? Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => HomePage()))
+                                      : Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProfilePage()));
+                                })
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 55,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child:
+                                  Image.asset('assets/images/successPost.png')),
+                        ))
+                  ]),
+            ));
+      },
+      barrierDismissible: true,
     );
   }
 }

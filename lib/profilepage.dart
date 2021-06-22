@@ -17,38 +17,83 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  int selectedIndex = 0;
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //-----------------------------ACCESSORS + INDECES----------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
   final FirebaseAuth auth = FirebaseAuth.instance;
-  int _selectedIndex = 2;
-  String un = "WAP USER";
-  String thisname = "WAP USER";
-  String firstname = "WAP";
-  String lastname = "USER";
+  ScrollController controller = ScrollController();
+  int tabSelectedIndex = 0;
+  int navBarSelectedIndex = 2;
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //-----------------------------USER DETAILS VARIABLE--------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  String accountType;
+  String userName = "WAP USER";
+  String fullName = "WAP USER";
+  String firstName = "WAP";
+  String lastName = "USER";
   String bio = " ";
   String address = "The user has not set this yet.";
   String contact = "The user has not set this yet.";
   String nickname = "The user has not set this yet.";
   String email = "The user has not set this yet.";
   dynamic pic = AssetImage('assets/images/defaultPic.png');
-  ScrollController controller = ScrollController();
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------LOADERS-----------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
   bool isLoading = true;
-  List<bool> _isChecked;
-  List<dynamic> posts = [];
   bool postLoading = true;
-  List<dynamic> pets = [];
   bool petLoading = true;
+  bool noMorePets = false;
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //---------------------------POSTLIST + PETLIST-------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  List<bool> _isChecked = [];
+  List<bool> _isLiked = [];
+  List<int> likes = [];
+  List<dynamic> posts = [];
+  List<dynamic> pets = [];
+  List<String> petIDs = [];
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //---------------------------INIT + GETTER FUNCTIONS--------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
 
   initState() {
+    //CHECK IF WIDGETS ARE MOUNTED
     if (!mounted) {
       return;
     }
+    //DATABASE FUNCTIONS ACCESSOR
 
+    //GET USER DETAILS
     getUserData().then((value) {
       setState(() {
         isLoading = false;
       });
-    }, onError: (msg) {});
+    });
 
+    getUserPic();
+
+    //GET USER POSTS
+    getUserPosts();
     super.initState();
   }
 
@@ -56,63 +101,60 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted) {
       return;
     }
-    final User user = auth.currentUser;
-    final dbGet = DatabaseService(uid: user.uid);
-    dbGet.getPosts().then((value) async {
-      setState(() {
-        posts.addAll(value);
-        postLoading = false;
-      });
-    });
-    dbGet.getPets().then((value) async {
+    accountType =
+        await DatabaseService(uid: auth.currentUser.uid).getAccountType();
+    fullName = await DatabaseService(uid: auth.currentUser.uid).getName();
+    firstName = await DatabaseService(uid: auth.currentUser.uid).getFName();
+    lastName = await DatabaseService(uid: auth.currentUser.uid).getLName();
+    userName = await DatabaseService(uid: auth.currentUser.uid).getUsername();
+    email = await DatabaseService(uid: auth.currentUser.uid).getEmail();
+    userName = await DatabaseService(uid: auth.currentUser.uid).getUsername();
+    bio = await DatabaseService(uid: auth.currentUser.uid).getBio();
+    nickname = await DatabaseService(uid: auth.currentUser.uid).getNickname();
+    address = await DatabaseService(uid: auth.currentUser.uid).getAddress();
+    contact = await DatabaseService(uid: auth.currentUser.uid).getContact();
+  }
+
+  getUserPic() async {
+    pic = await DatabaseService(uid: auth.currentUser.uid).getPicture();
+  }
+
+  getUserPets() async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .getPets(petIDs)
+        .then((value) async {
       setState(() {
         pets.addAll(value);
         petLoading = false;
+        if (value.length == 0) noMorePets = true;
       });
-      print("pets: " + pets.length.toString());
+      pets.forEach((element) {
+        petIDs.add(element.petID);
+      });
+
       pets.isNotEmpty
           ? _isChecked = List<bool>.filled(pets.length, false, growable: true)
           : _isChecked = [];
     });
-    dynamic uname = await dbGet.getUsername();
-    dynamic name1 = await dbGet.getName();
-    if (name1 == null) {
-      name1 = await dbGet.getName2();
-      thisname = name1;
-    } else {
-      thisname = name1;
-      name1 = await dbGet.getFName();
-      firstname = name1;
-      name1 = await dbGet.getLName();
-      lastname = name1;
-    }
-    email = await dbGet.getEmail();
-    dynamic bio1 = await dbGet.getBio();
+  }
 
-    if (bio1 != null) {
-      dynamic nickname1 = await dbGet.getNickname();
-      dynamic address1 = await dbGet.getAddress();
-      dynamic contact1 = await dbGet.getContact();
+  getUserPosts() async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .getPosts()
+        .then((value) async {
       setState(() {
-        bio = bio1;
-        nickname = nickname1;
-        address = address1;
-        contact = contact1;
+        posts.addAll(value);
+        posts.forEach((element) {
+          _isLiked.add(element.liked);
+          likes.add(element.likes);
+        });
+        postLoading = false;
       });
-    }
-    setState(() {
-      un = uname;
     });
+  }
 
-    var temp = await DatabaseService(uid: user.uid).getPicture();
-    if (temp != null) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        pic = temp;
-      });
-    }
+  deletePost(String postID) async {
+    return await DatabaseService(uid: auth.currentUser.uid).deletePost(postID);
   }
 
   deletePet(List<int> selectedIndex) {
@@ -122,9 +164,14 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  addLike(String postID) async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .addLikeToPost(postID);
+  }
+
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      navBarSelectedIndex = index;
     });
     switch (index) {
       case 0:
@@ -162,17 +209,20 @@ class _ProfilePageState extends State<ProfilePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
-        elevation: 1,
-        title: Text(
-          "Profile",
-          key: Key('Profile1'),
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Montserrat',
-          ),
+        elevation: 0,
+        title: Column(
+          children: [
+            Text(
+              "Profile",
+	      key: Key('Profile1'),
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Montserrat',
+              ),
+            ),
+          ],
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -184,7 +234,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       floatingActionButton: isLoading
           ? Container()
-          : selectedIndex == 0
+          : tabSelectedIndex == 0
               ? FloatingActionButton(
                   backgroundColor: Colors.transparent,
                   onPressed: () {
@@ -203,143 +253,171 @@ class _ProfilePageState extends State<ProfilePage> {
             )
           : ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 28, top: 7),
-                            child: CircleAvatar(
-                              radius: 40, backgroundImage: pic, //GET FROM DB
-                              child: GestureDetector(
-                                onTap: () async {
-                                  await expandPhoto(pic);
-                                },
-                              ),
-                            ),
+                Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          colors: [Colors.teal[100], Colors.teal],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey,
+                          offset: Offset(0.0, 1.0), //(x,y)
+                          blurRadius: 6.0,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 3,
+                          width: size.width * 0.35,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
                           ),
-                          Container(
-                            width: (size.width - 50) * 0.7,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          thisname,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            fontFamily: 'Montserrat',
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 1),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Expanded(
-                                                child: Text(
-                                                  //GET FROM DB
-                                                  '@' + un,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: <Widget>[
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(left: 28, top: 7),
+                                    child: CircleAvatar(
+                                      radius: 40,
+                                      backgroundImage: pic, //GET FROM DB
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          await expandPhoto(pic, true, 0);
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: (size.width - 50) * 0.7,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets.only(left: 10),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: <Widget>[
+                                                Text(
+                                                  fullName,
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
                                                     fontFamily: 'Montserrat',
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 1),
+                                                  child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: <Widget>[
+                                                      Expanded(
+                                                        child: Text(
+                                                          //GET FROM DB
+                                                          '@' + userName,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                )
+                                              ],
+                                            ),
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                   ),
+                                ],
+                              ),
+                              SizedBox(height: 15),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 30, bottom: 5),
+                                child: Text(
+                                  bio,
+                                  style: TextStyle(fontFamily: 'Montserrat'),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 15),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30, bottom: 5),
-                        child: Text(
-                          bio,
-                          style: TextStyle(fontFamily: 'Montserrat'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                  Expanded(
-                      //padding: const EdgeInsets.fromLTRB(28, 0, 0, 0),
-                      child: Padding(
-                    padding: EdgeInsets.only(left: 30, right: 20),
-                    child: MaterialButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EditProfile(
-                                    pic,
-                                    firstname,
-                                    lastname,
-                                    bio,
-                                    address,
-                                    nickname,
-                                    contact)));
-                      },
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5)),
-                      color: Colors.teal[50],
-                      child: Container(
-                        child: Text(
-                          'Edit Profile',
-                          key: Key("editProfile"),
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: 'Montserrat',
-                            color: Colors.teal,
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                  )),
-                  Container(
-                      padding: EdgeInsets.only(right: 30),
-                      child: IconButton(
-                          icon: Icon(
-                            Icons.bookmark,
-                            color: Colors.teal,
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => BookmarkPage()));
-                          }))
-                ]),
-                SizedBox(height: 10),
-                Container(
-                  height: 0.5,
-                  width: size.width,
-                  decoration: BoxDecoration(
-                    color: Colors.teal,
-                  ),
-                ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                  child: Padding(
+                                padding: EdgeInsets.only(left: 30, right: 20),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => EditProfile(
+                                                pic,
+                                                firstName,
+                                                lastName,
+                                                bio,
+                                                address,
+                                                nickname,
+                                                contact)));
+                                  },
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40)),
+                                  color: Colors.teal[50],
+                                  child: Container(
+                                    child: Text(
+                                      'Edit Profile',
+				      key: Key("editProfile"),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontFamily: 'Montserrat',
+                                        color: Colors.teal,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )),
+                              Container(
+                                  padding: EdgeInsets.only(right: 30),
+                                  child: IconButton(
+                                      icon: Icon(
+                                        Icons.bookmark,
+                                        color: Colors.teal[50],
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    BookmarkPage()));
+                                      }))
+                            ])
+                      ],
+                    )),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 3),
                   child: Row(
@@ -354,7 +432,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           onPressed: () {
                             print("Display Posts"); //FROM DB
                             setState(() {
-                              selectedIndex = 0;
+                              tabSelectedIndex = 0;
                             });
                           },
                         ),
@@ -366,10 +444,11 @@ class _ProfilePageState extends State<ProfilePage> {
                             Icons.pets_rounded,
                             color: Colors.teal,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             print("Display Pet List"); //FROM DB
+                            getUserPets();
                             setState(() {
-                              selectedIndex = 1;
+                              tabSelectedIndex = 1;
                             });
                           },
                         ),
@@ -384,7 +463,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           onPressed: () {
                             print("Display About Me"); //FROM DB
                             setState(() {
-                              selectedIndex = 2;
+                              tabSelectedIndex = 2;
                             });
                           },
                         ),
@@ -399,21 +478,21 @@ class _ProfilePageState extends State<ProfilePage> {
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 0
+                              color: tabSelectedIndex == 0
                                   ? Colors.teal[800]
                                   : Colors.transparent)),
                       Container(
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 1
+                              color: tabSelectedIndex == 1
                                   ? Colors.teal[800]
                                   : Colors.transparent)),
                       Container(
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 2
+                              color: tabSelectedIndex == 2
                                   ? Colors.teal[800]
                                   : Colors.transparent))
                     ],
@@ -426,7 +505,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ]),
                 SizedBox(height: 10),
                 IndexedStack(
-                  index: selectedIndex,
+                  index: tabSelectedIndex,
                   children: [
                     postLoading
                         ? Container(
@@ -481,7 +560,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
+        currentIndex: navBarSelectedIndex,
         onTap: _onItemTapped,
         backgroundColor: Colors.white,
         selectedItemColor: Colors.black,
@@ -505,7 +584,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   image: MemoryImage(posts[index].postPic), fit: BoxFit.cover)),
           child: GestureDetector(
             onTap: () {
-              expandPhoto(MemoryImage(posts[index].postPic));
+              expandPhoto(MemoryImage(posts[index].postPic), false, index);
             },
           ),
         );
@@ -535,9 +614,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           fontFamily: 'Montserrat',
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.teal[50]
-                          //decoration: TextDecoration.underline
-                          )),
+                          color: Colors.teal[50])),
                 ),
                 SizedBox(height: 15),
                 Row(
@@ -559,11 +636,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Nickname",
+			  key: Key("nickname"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
-                          key: Key("nickname"),
                         ),
                       ),
                     ),
@@ -595,11 +672,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Address",
+			  key: Key("address"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
-                          key: Key("address"),
                         ),
                       ),
                     ),
@@ -631,11 +708,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Contact Details",
+			  key: Key("contact"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
                               fontSize: 18),
-                          key: Key("contact"),
                         ),
                       ),
                     ),
@@ -664,12 +741,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 15),
-                      child: Text("Email Address",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                          key: Key("emailAddProfilePage")),
+                      child: Text(
+                        "Email Address",
+			                key: Key("emailAddProfilePage")),
+                      style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18),
+                      ),
                     ),
                   ],
                 ),
@@ -704,9 +783,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontFamily: 'Montserrat',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal[50]
-                    //decoration: TextDecoration.underline
-                    )),
+                    color: Colors.teal[50])),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -769,109 +846,140 @@ class _ProfilePageState extends State<ProfilePage> {
                       height: size.height * 0.45,
                       child: ListView.builder(
                         controller: controller,
-                        itemCount: pets.length,
                         physics: BouncingScrollPhysics(),
+                        itemCount:
+                            pets.length >= 4 ? pets.length + 1 : pets.length,
                         itemBuilder: (context, index) {
-                          return Container(
-                              height: 120,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 10),
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10)),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black.withAlpha(100),
-                                        blurRadius: 10.0),
-                                  ]),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15.0, vertical: 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Checkbox(
-                                        activeColor: Colors.teal,
-                                        checkColor: Colors.white,
-                                        value: _isChecked[index],
-                                        onChanged: (bool value) {
-                                          setState(() {
-                                            _isChecked[index] = value;
-                                          });
-                                        }),
-                                    Container(
-                                      decoration:
-                                          BoxDecoration(shape: BoxShape.circle),
-                                      child: Image(
-                                        image: MemoryImage(pets[index].petPic),
-                                        height: double.infinity,
+                          return (index == pets.length && pets.length >= 4)
+                              ? noMorePets
+                                  ? Container(
+                                      alignment: Alignment.center,
+                                      padding: EdgeInsets.only(bottom: 10),
+                                      child: Text(
+                                        "No more pets to show",
+                                        style:
+                                            TextStyle(color: Colors.teal[500]),
                                       ),
+                                    )
+                                  : Container(
+                                      color: Colors.teal[100],
+                                      child: TextButton(
+                                        child: Text(
+                                          "Load More",
+                                          style: TextStyle(
+                                              color: Colors.teal[500]),
+                                        ),
+                                        onPressed: () async {
+                                          await getUserPets();
+                                        },
+                                      ),
+                                    )
+                              : Container(
+                                  height: 120,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 10),
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(10)),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withAlpha(100),
+                                            blurRadius: 10.0),
+                                      ]),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15.0, vertical: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        Checkbox(
+                                            activeColor: Colors.teal,
+                                            checkColor: Colors.white,
+                                            value: _isChecked[index],
+                                            onChanged: (bool value) {
+                                              setState(() {
+                                                _isChecked[index] = value;
+                                              });
+                                            }),
+                                        CircleAvatar(
+                                          backgroundColor: Colors.teal,
+                                          radius: size.height * 0.05,
+                                          backgroundImage: MemoryImage(
+                                              pets[index].petPic), //GET FROM DB
+                                        ),
+                                        Expanded(
+                                            child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              PetProfilePage(
+                                                                pet:
+                                                                    pets[index],
+                                                                publicViewType:
+                                                                    false,
+                                                              )));
+                                                },
+                                                child: Text(pets[index].petName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                        color: Colors.black,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .underline,
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontFamily:
+                                                            'Montserrat')),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 10),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      pets[index].petBreed,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          color: Colors.grey,
+                                                          fontFamily:
+                                                              'Montserrat'),
+                                                    ),
+                                                    Text(
+                                                      pets[index].petSex,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          color: Colors.grey,
+                                                          fontFamily:
+                                                              'Montserrat'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )),
+                                      ],
                                     ),
-                                    Expanded(
-                                        child: Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          PetProfilePage(
-                                                            pet: pets[index],
-                                                            publicViewType:
-                                                                false,
-                                                          )));
-                                              print("pressed");
-                                            },
-                                            child: Text(pets[index].petName,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Montserrat')),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 10),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  pets[index].petBreed,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontFamily: 'Montserrat'),
-                                                ),
-                                                Text(
-                                                  pets[index].petSex,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontFamily: 'Montserrat'),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    )),
-                                  ],
-                                ),
-                              ));
+                                  ));
                         },
                       ))
                   : SizedBox(height: 5),
@@ -921,20 +1029,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                         style: TextStyle(
                                             fontFamily: 'Montserrat')),
                                     onPressed: () {
-                                      print(selectedIndex);
-
-                                      /* setState(() {
-                                        if (selectedIndex.length ==
-                                            pets.length) {
-                                          _isChecked.clear();
-                                          pets.clear();
-                                        } else {
-                                          selectedIndex.forEach((element) {
-                                            _isChecked.removeAt(element - 1);
-                                            pets.removeAt(element - 1);
-                                          });
-                                        }
-                                      });*/
                                       deletePet(selectedIndex);
                                       Navigator.pop(context);
                                     }),
@@ -974,7 +1068,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return flag;
   }
 
-  expandPhoto(dynamic img) async {
+  expandPhoto(dynamic img, bool profPic, dynamic index) async {
     if (!mounted) {
       return;
     }
@@ -985,21 +1079,116 @@ class _ProfilePageState extends State<ProfilePage> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20))),
           child: SingleChildScrollView(
-              // alignment: Alignment.topCenter,
-              //  clipBehavior: Clip.none,
               child: Stack(
             alignment: Alignment.topCenter,
             clipBehavior: Clip.none,
             children: [
-              new Padding(
-                padding: EdgeInsets.all(10),
-                child: Image(
-                  fit: BoxFit.fill,
-                  image: img,
-                ),
+              Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Image(
+                      fit: BoxFit.fill,
+                      image: img,
+                    ),
+                  ),
+                  !profPic
+                      ? Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                bottom: 5,
+                              ),
+                              child: InkWell(
+                                customBorder: CircleBorder(),
+                                onTap: () async {
+                                  await addLike(posts[index].postID);
+                                  setState(() {
+                                    _isLiked[index] = !_isLiked[index];
+
+                                    _isLiked[index]
+                                        ? likes[index] = likes[index] + 1
+                                        : likes[index] = likes[index] - 1;
+                                  });
+                                  Navigator.pop(context);
+                                  expandPhoto(img, profPic, index);
+                                },
+                                child: ImageIcon(
+                                  AssetImage('assets/images/heart.png'),
+                                  color: _isLiked[index]
+                                      ? Colors.red
+                                      : Colors.teal,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child: Text(
+                                likes[index].toString() + " Paw Hearts",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Montserrat',
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                  padding: EdgeInsets.only(bottom: 5),
+                                  alignment: Alignment.centerRight,
+                                  child: IconButton(
+                                    icon:
+                                        Icon(Icons.delete, color: Colors.teal),
+                                    onPressed: () async {
+                                      await showDialogDelete2(
+                                          posts[index].postID);
+                                    },
+                                  )),
+                            )
+                          ],
+                        )
+                      : Container(),
+                  !profPic
+                      ? Row(children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 10, bottom: 5),
+                            child: CircleAvatar(
+                              backgroundImage: pic,
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 10, bottom: 5),
+                              child: Text('@' + userName,
+                                  style: TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              padding: EdgeInsets.only(right: 10, bottom: 5),
+                              child: Text(posts[index].date,
+                                  style: TextStyle(fontFamily: 'Montserrat')),
+                            ),
+                          )
+                        ])
+                      : Container(),
+                  !profPic
+                      ? posts[index].caption != ""
+                          ? Container(
+                              alignment: Alignment.centerLeft,
+                              padding: EdgeInsets.only(left: 60, bottom: 10),
+                              child: Text(posts[index].caption,
+                                  style: TextStyle(fontFamily: 'Montserrat')),
+                            )
+                          : Container()
+                      : Container()
+                ],
               ),
-              new Positioned(
-                //padding: EdgeInsets.only(top: 10),
+              Positioned(
                 top: -20,
                 right: -15,
                 child: GestureDetector(
@@ -1015,6 +1204,88 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           )),
         );
+      },
+      barrierDismissible: true,
+    );
+  }
+
+  showDialogDelete2(String postID) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text("Do you really want to delete this post?",
+                                style: TextStyle(
+                                  fontFamily: 'Montserrat',
+                                ),
+                                textAlign: TextAlign.center),
+                            SizedBox(height: 10),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: <Widget>[
+                                MaterialButton(
+                                    color: Colors.teal[100],
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100)),
+                                    child: Text("Delete",
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat')),
+                                    onPressed: () async {
+                                      await deletePost(postID);
+                                      Navigator.pop(context);
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  ProfilePage()));
+                                    }),
+                                MaterialButton(
+                                    color: Colors.teal[100],
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(100)),
+                                    child: Text("Cancel",
+                                        style: TextStyle(
+                                            fontFamily: 'Montserrat')),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    }),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 50,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child: Image.asset('assets/images/haha.png')),
+                        ))
+                  ]),
+            ));
       },
       barrierDismissible: true,
     );

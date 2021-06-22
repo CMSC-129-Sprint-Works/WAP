@@ -57,7 +57,7 @@ void main() {
       expect(find.text(address), findsOneWidget);
 
       final contact = '09364455431';
-      await tester.enterText(find.byKey(Key('contact')), contact);
+      await tester.enterText(find.byKey(Key('contact1')), contact);
       expect(find.text(contact), findsOneWidget);
 
       final descript = 'I am a cat lover.';

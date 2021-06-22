@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
+import 'package:wap/message_convo.dart';
+import 'package:wap/messagepage.dart';
 import 'package:wap/petprofilepage.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
 import 'package:wap/profilepage.dart';
 import 'package:wap/searchPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PublicProfilePage extends StatefulWidget {
   final String userID;
@@ -16,89 +19,155 @@ class PublicProfilePage extends StatefulWidget {
 }
 
 class _PublicProfilePageState extends State<PublicProfilePage> {
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //-----------------------------ACCESSORS + INDECES----------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
   final FirebaseAuth auth = FirebaseAuth.instance;
-  int selectedIndex = 0;
-  int _selectedIndex = 1;
-  String un = "WAP USER";
-  String thisname = "WAP USER";
-  String firstname = "WAP USER";
+  ScrollController controller = ScrollController();
+  int tabSelectedIndex = 0;
+  int navBarSelectedIndex = 2;
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //-----------------------------USER DETAILS VARIABLE--------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  bool following = false;
+  String accountType;
+  String userName = "WAP USER";
+  String fullName = "WAP USER";
+  String firstName = "WAP";
+  String lastName = "USER";
   String bio = " ";
   String address = "The user has not set this yet.";
   String contact = "The user has not set this yet.";
   String nickname = "The user has not set this yet.";
   String email = "The user has not set this yet.";
   dynamic pic = AssetImage('assets/images/defaultPic.png');
-  ScrollController controller = ScrollController();
-  bool isLoading = true;
-  bool following = true;
-  List<dynamic> posts = [];
-  bool postLoading = true;
-  List<dynamic> pets = [];
-  bool petLoading = true;
+  String myFirstName, myLastName, myUserName, username1;
 
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------LOADERS-----------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  bool isLoading = true;
+  bool postLoading = true;
+  bool petLoading = true;
+  bool noMorePets = false;
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //---------------------------POSTLIST + PETLIST-------------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  List<dynamic> posts = [];
+  List<bool> _isLiked = [];
+  List<int> likes = [];
+  List<dynamic> pets = [];
+  List<String> petIDs = [];
+
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+  //---------------------------INIT + GETTER FUNCTIONS--------------------------
+  //----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
   initState() {
-    super.initState();
+    //CHECK IF WIDGETS ARE MOUNTED
+    if (!mounted) {
+      return;
+    }
     searchFollowing();
+    getMyData();
+    //DATABASE FUNCTIONS ACCESSOR
+
+    //GET USER DETAILS
     getUserData().then((value) {
       setState(() {
         isLoading = false;
       });
-    }, onError: (msg) {});
+    });
+
+    getUserPic();
+
+    //GET USER POSTS
+    getUserPosts();
+    super.initState();
+  }
+
+  getMyData() async {
+    SharedPreferences shared = await SharedPreferences.getInstance();
+    myFirstName = shared.getString('firstname');
+    myLastName = shared.getString('lastname');
+    myUserName = shared.getString('username');
+
+    dynamic holder = await DatabaseService(uid: widget.userID).getUsername();
+    username1 = holder.toString();
+  }
+
+  getChatRoomID(String u1, String u2) {
+    if (u1.substring(0, 1).codeUnitAt(0) > u2.substring(0, 1).codeUnitAt(0)) {
+      return "$u2\_$u1";
+    } else {
+      return "$u1\_$u2";
+    }
   }
 
   getUserData() async {
     if (!mounted) {
       return;
     }
-    final dbGet = DatabaseService(uid: widget.userID);
-    dbGet.getPosts().then((value) async {
-      setState(() {
-        posts.addAll(value);
-        postLoading = false;
-      });
-    });
-    dbGet.getPets().then((value) async {
+    accountType = await DatabaseService(uid: widget.userID).getAccountType();
+    fullName = await DatabaseService(uid: widget.userID).getName();
+    firstName = await DatabaseService(uid: widget.userID).getFName();
+    lastName = await DatabaseService(uid: widget.userID).getLName();
+    userName = await DatabaseService(uid: widget.userID).getUsername();
+    email = await DatabaseService(uid: widget.userID).getEmail();
+    userName = await DatabaseService(uid: widget.userID).getUsername();
+    bio = await DatabaseService(uid: widget.userID).getBio();
+    nickname = await DatabaseService(uid: widget.userID).getNickname();
+    address = await DatabaseService(uid: widget.userID).getAddress();
+    contact = await DatabaseService(uid: widget.userID).getContact();
+  }
+
+  getUserPic() async {
+    pic = await DatabaseService(uid: widget.userID).getPicture();
+  }
+
+  getUserPets() async {
+    return await DatabaseService(uid: widget.userID)
+        .getPets(petIDs)
+        .then((value) async {
       setState(() {
         pets.addAll(value);
         petLoading = false;
+        if (value.length == 0) noMorePets = true;
       });
-      print("pets: " + pets.length.toString());
-    });
-    dynamic uname = await dbGet.getUsername();
-    dynamic name1 = await dbGet.getName();
-    if (name1 == null) {
-      thisname = await dbGet.getName2();
-    } else {
-      thisname = name1;
-      name1 = await dbGet.getFName();
-      firstname = name1;
-    }
-    dynamic bio1 = await dbGet.getBio();
-    email = await dbGet.getEmail();
-    if (bio1 != null) {
-      dynamic nickname1 = await dbGet.getNickname();
-      dynamic address1 = await dbGet.getAddress();
-      dynamic contact1 = await dbGet.getContact();
-      setState(() {
-        bio = bio1;
-        nickname = nickname1;
-        address = address1;
-        contact = contact1;
+      pets.forEach((element) {
+        petIDs.add(element.petID);
       });
-    }
-    setState(() {
-      un = uname;
     });
+  }
 
-    var temp = await DatabaseService(uid: widget.userID).getPicture();
-    if (temp != null) {
-      if (!mounted) {
-        return;
-      }
+  getUserPosts() async {
+    return await DatabaseService(uid: widget.userID)
+        .getPosts()
+        .then((value) async {
       setState(() {
-        pic = temp;
+        posts.addAll(value);
+        posts.forEach((element) {
+          _isLiked.add(element.liked);
+          likes.add(element.likes);
+        });
+        postLoading = false;
       });
-    }
+    });
   }
 
   searchFollowing() async {
@@ -113,20 +182,22 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
 
   addFollowing() async {
     final User user = auth.currentUser;
-    final dbGet = DatabaseService(uid: user.uid);
-    dbGet.addFollowing(widget.userID);
+    DatabaseService(uid: user.uid).addFollowing(widget.userID);
   }
 
   removeFollowing() async {
-    print('deleting');
     final User user = auth.currentUser;
-    final dbGet = DatabaseService(uid: user.uid);
-    dbGet.removeFollowing(widget.userID);
+    DatabaseService(uid: user.uid).removeFollowing(widget.userID);
+  }
+
+  addLike(String postID) async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .addLikeToPost(postID);
   }
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      navBarSelectedIndex = index;
     });
     switch (index) {
       case 0:
@@ -148,7 +219,10 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         }
         break;
       case 3:
-        {}
+        {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => MessagePage()));
+        }
         break;
       case 4:
         {
@@ -164,16 +238,23 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
+        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: true,
-        elevation: 1,
+        elevation: 0,
         title: Text(
-          firstname + "'s Profile",
+          firstName + "'s Profile",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: isLoading
@@ -183,174 +264,188 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
             )
           : ListView(
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                        colors: [Colors.teal[100], Colors.teal],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        offset: Offset(0.0, 1.0), //(x,y)
+                        blurRadius: 6.0,
+                      ),
+                    ],
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 28, top: 7),
-                            child: CircleAvatar(
-                              radius: 40, backgroundImage: pic, //GET FROM DB
-                              child: GestureDetector(
-                                onTap: () async {
-                                  await expandPhoto(pic);
-                                },
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: (size.width - 50) * 0.7,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          thisname,
-                                          overflow: TextOverflow.clip,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                            fontFamily: 'Montserrat',
-                                          ),
-                                        ),
-                                        Padding(
+                      Container(
+                        height: 3,
+                        width: size.width * 0.35,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 10, right: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: <Widget>[
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 28, top: 7),
+                                  child: CircleAvatar(
+                                    radius: 40,
+                                    backgroundImage: pic, //GET FROM DB
+                                    child: GestureDetector(
+                                      onTap: () async {
+                                        await expandPhoto(pic, true, 0);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  width: (size.width - 50) * 0.7,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Padding(
                                           padding:
-                                              const EdgeInsets.only(top: 1),
-                                          child: Row(
+                                              const EdgeInsets.only(left: 10),
+                                          child: Column(
                                             crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                                CrossAxisAlignment.start,
                                             children: <Widget>[
                                               Text(
-                                                //GET FROM DB
-                                                '@' + un,
+                                                fullName,
                                                 overflow: TextOverflow.clip,
                                                 style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
                                                   fontFamily: 'Montserrat',
                                                 ),
                                               ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    top: 1),
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.center,
+                                                  children: <Widget>[
+                                                    Text(
+                                                      //GET FROM DB
+                                                      '@' + userName,
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                      style: TextStyle(
+                                                        fontFamily:
+                                                            'Montserrat',
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              )
                                             ],
                                           ),
-                                        )
-                                      ],
-                                    ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
+                            SizedBox(height: 15),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(left: 30, bottom: 5),
+                              child: Text(
+                                bio,
+                                style: TextStyle(fontFamily: 'Montserrat'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(28, 0, 0, 0),
+                            child: MaterialButton(
+                              onPressed: () async {
+                                setState(() {
+                                  following = !following;
+                                });
+                                following
+                                    ? await addFollowing()
+                                    : await removeFollowing();
+                                final snackBar = SnackBar(
+                                  backgroundColor: Colors.teal,
+                                  content: !following
+                                      ? Text(
+                                          "Oh no! You unfollowed " + firstName)
+                                      : Text(
+                                          "Yay! You're following " + firstName),
+                                );
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                              color: Colors.teal[50],
+                              child: Center(
+                                child: Text(
+                                  following ? 'Unfollow' : 'Follow',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontFamily: 'Montserrat',
+                                    color: Colors.teal,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            child: MaterialButton(
+                              onPressed: () {
+                                dynamic chatroomID =
+                                    getChatRoomID(myUserName, username1);
+
+                                Map<String, dynamic> chatRoomInfoMap = {
+                                  "users": [myUserName, username1],
+                                };
+                                DatabaseService().createChatRoom(
+                                    chatroomID, chatRoomInfoMap);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            MessageConvo(widget.userID)));
+                              },
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                              color: Colors.teal[50],
+                              child: Center(
+                                child: Text(
+                                  'Send Message',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontFamily: 'Montserrat',
+                                    color: Colors.teal,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 15),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30, bottom: 5),
-                        child: Text(
-                          bio,
-                          style: TextStyle(fontFamily: 'Montserrat'),
-                        ),
-                      ),
                     ],
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(28, 0, 0, 0),
-                      child: MaterialButton(
-                        onPressed: () async {
-                          setState(() {
-                            following = !following;
-                          });
-                          following
-                              ? await addFollowing()
-                              : await removeFollowing();
-                          final snackBar = SnackBar(
-                            backgroundColor: Colors.teal,
-                            content: !following
-                                ? Text("Oh no! You unfollowed " + firstname)
-                                : Text("Yay! You're following " + firstname),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        color: Colors.teal[50],
-                        child: Center(
-                          child: Text(
-                            following ? 'Unfollow' : 'Follow',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Montserrat',
-                              color: Colors.teal,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                      child: MaterialButton(
-                        onPressed: () {
-                          final snackBar = SnackBar(
-                              backgroundColor: Colors.teal,
-                              content:
-                                  Text("This feature is not available yet"));
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        color: Colors.teal[50],
-                        child: Center(
-                          child: Text(
-                            'Send Message',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: 'Montserrat',
-                              color: Colors.teal,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-                      child: MaterialButton(
-                        onPressed: () {
-                          final snackBar = SnackBar(
-                              backgroundColor: Colors.teal,
-                              content:
-                                  Text("This feature is not available yet"));
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        },
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5)),
-                        color: Colors.teal[50],
-                        child: Center(
-                          child: Icon(
-                            Icons.report_outlined,
-                            color: Colors.teal[400],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Container(
-                  height: 0.5,
-                  width: size.width,
-                  decoration: BoxDecoration(
-                    color: Colors.teal,
                   ),
                 ),
                 Padding(
@@ -367,7 +462,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           onPressed: () {
                             print("Display Posts"); //FROM DB
                             setState(() {
-                              selectedIndex = 0;
+                              tabSelectedIndex = 0;
                             });
                           },
                         ),
@@ -381,8 +476,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           ),
                           onPressed: () {
                             print("Display Pet List"); //FROM DB
+                            getUserPets();
                             setState(() {
-                              selectedIndex = 1;
+                              tabSelectedIndex = 1;
                             });
                           },
                         ),
@@ -397,7 +493,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           onPressed: () {
                             print("Display About Me"); //FROM DB
                             setState(() {
-                              selectedIndex = 2;
+                              tabSelectedIndex = 2;
                             });
                           },
                         ),
@@ -412,21 +508,21 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 0
+                              color: tabSelectedIndex == 0
                                   ? Colors.teal[800]
                                   : Colors.transparent)),
                       Container(
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 1
+                              color: tabSelectedIndex == 1
                                   ? Colors.teal[800]
                                   : Colors.transparent)),
                       Container(
                           height: 3,
                           width: (size.width * 0.33),
                           decoration: BoxDecoration(
-                              color: selectedIndex == 2
+                              color: tabSelectedIndex == 2
                                   ? Colors.teal[800]
                                   : Colors.transparent))
                     ],
@@ -439,7 +535,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                 ]),
                 SizedBox(height: 10),
                 IndexedStack(
-                  index: selectedIndex,
+                  index: tabSelectedIndex,
                   children: [
                     postLoading
                         ? Container(
@@ -494,7 +590,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
           ),
         ],
         type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
+        currentIndex: navBarSelectedIndex,
         onTap: _onItemTapped,
         backgroundColor: Colors.white,
         selectedItemColor: Colors.black,
@@ -518,7 +614,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                   image: MemoryImage(posts[index].postPic), fit: BoxFit.cover)),
           child: GestureDetector(
             onTap: () {
-              expandPhoto(MemoryImage(posts[index].postPic));
+              expandPhoto(MemoryImage(posts[index].postPic), false, index);
             },
           ),
         );
@@ -704,21 +800,20 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         children: [
           Container(
             alignment: Alignment.center,
+            margin: EdgeInsets.only(left: 20, right: 20),
             padding: const EdgeInsets.only(left: 70, right: 70),
             decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
                 color: Colors.teal,
                 borderRadius: BorderRadius.circular(10)),
-            child: Text("My Pet List",
-                softWrap: true,
-                overflow: TextOverflow.clip,
-                textAlign: TextAlign.center,
+            child: Text(firstName + "'s Pet List",
                 style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.teal[50])),
           ),
+          SizedBox(height: 15),
           petLoading
               ? Container(
                   margin: EdgeInsets.only(top: 50),
@@ -732,99 +827,144 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                       height: size.height * 0.5,
                       child: ListView.builder(
                         controller: controller,
-                        itemCount: pets.length,
                         physics: BouncingScrollPhysics(),
+                        itemCount:
+                            pets.length >= 4 ? pets.length + 1 : pets.length,
                         itemBuilder: (context, index) {
-                          return Container(
-                              height: 120,
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 10),
-                              decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10)),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black.withAlpha(100),
-                                        blurRadius: 10.0),
-                                  ]),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 15.0, vertical: 10),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: <Widget>[
-                                    Container(
-                                      decoration:
-                                          BoxDecoration(shape: BoxShape.circle),
-                                      child: Image(
-                                        image: MemoryImage(pets[index].petPic),
-                                        height: double.infinity,
-                                      ),
-                                    ),
-                                    Expanded(
-                                        child: Padding(
-                                      padding: const EdgeInsets.only(left: 10),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          PetProfilePage(
-                                                              pet: pets[index],
-                                                              publicViewType:
-                                                                  true)));
-                                              print("pressed");
-                                            },
-                                            child: Text(pets[index].petName,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                    color: Colors.black,
-                                                    decoration: TextDecoration
-                                                        .underline,
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'Montserrat')),
+                          return (index == pets.length && pets.length >= 4)
+                              ? noMorePets
+                                  ? Column(
+                                      children: [
+                                        SizedBox(height: 20),
+                                        Container(
+                                          alignment: Alignment.center,
+                                          width: size.width * 0.8,
+                                          padding: EdgeInsets.only(bottom: 10),
+                                          child: Text(
+                                            "No more pets to show",
+                                            style: TextStyle(
+                                                color: Colors.teal[500]),
                                           ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 10),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  pets[index].petBreed,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontFamily: 'Montserrat'),
-                                                ),
-                                                Text(
-                                                  pets[index].petSex,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontFamily: 'Montserrat'),
-                                                ),
-                                              ],
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      children: [
+                                        SizedBox(height: 20),
+                                        Container(
+                                          width: size.width * 0.8,
+                                          color: Colors.teal[100],
+                                          child: TextButton(
+                                            child: Text(
+                                              "Load More",
+                                              style: TextStyle(
+                                                  color: Colors.teal[500]),
                                             ),
+                                            onPressed: () async {
+                                              await getUserPets();
+                                            },
                                           ),
-                                        ],
-                                      ),
-                                    )),
-                                  ],
-                                ),
-                              ));
+                                        ),
+                                      ],
+                                    )
+                              : Container(
+                                  height: 120,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 10),
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(10)),
+                                      color: Colors.white,
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: Colors.black.withAlpha(100),
+                                            blurRadius: 10.0),
+                                      ]),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15.0, vertical: 10),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: <Widget>[
+                                        CircleAvatar(
+                                          radius: size.height * 0.05,
+                                          backgroundImage: MemoryImage(
+                                              pets[index].petPic), //GET FROM DB
+                                        ),
+                                        Expanded(
+                                            child: Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 10),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              PetProfilePage(
+                                                                pet:
+                                                                    pets[index],
+                                                                publicViewType:
+                                                                    true,
+                                                                ownerID: widget
+                                                                    .userID,
+                                                              )));
+                                                },
+                                                child: Text(pets[index].petName,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: const TextStyle(
+                                                        color: Colors.black,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .underline,
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontFamily:
+                                                            'Montserrat')),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 10),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      pets[index].petBreed,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          color: Colors.grey,
+                                                          fontFamily:
+                                                              'Montserrat'),
+                                                    ),
+                                                    Text(
+                                                      pets[index].petSex,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: const TextStyle(
+                                                          color: Colors.grey,
+                                                          fontFamily:
+                                                              'Montserrat'),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )),
+                                      ],
+                                    ),
+                                  ));
                         },
                       ))
                   : Container(),
@@ -833,7 +973,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
     );
   }
 
-  expandPhoto(dynamic img) async {
+  expandPhoto(dynamic img, bool profPic, dynamic index) async {
     if (!mounted) {
       return;
     }
@@ -844,21 +984,103 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(20))),
           child: SingleChildScrollView(
-              // alignment: Alignment.topCenter,
-              //  clipBehavior: Clip.none,
               child: Stack(
             alignment: Alignment.topCenter,
             clipBehavior: Clip.none,
             children: [
-              new Padding(
-                padding: EdgeInsets.all(10),
-                child: Image(
-                  fit: BoxFit.fill,
-                  image: img,
-                ),
+              Column(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Image(
+                      fit: BoxFit.fill,
+                      image: img,
+                    ),
+                  ),
+                  !profPic
+                      ? Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                left: 15,
+                                bottom: 5,
+                              ),
+                              child: InkWell(
+                                customBorder: CircleBorder(),
+                                onTap: () async {
+                                  await addLike(posts[index].postID);
+                                  setState(() {
+                                    _isLiked[index] = !_isLiked[index];
+
+                                    _isLiked[index]
+                                        ? likes[index] = likes[index] + 1
+                                        : likes[index] = likes[index] - 1;
+                                  });
+                                  Navigator.pop(context);
+                                  expandPhoto(img, profPic, index);
+                                },
+                                child: ImageIcon(
+                                  AssetImage('assets/images/heart.png'),
+                                  color: _isLiked[index]
+                                      ? Colors.red
+                                      : Colors.teal,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 5, bottom: 5),
+                              child: Text(
+                                likes[index].toString() + " Paw Hearts",
+                                textAlign: TextAlign.left,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'Montserrat',
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(),
+                  !profPic
+                      ? Row(children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 10, bottom: 5),
+                            child: CircleAvatar(
+                              backgroundImage: pic,
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 10, bottom: 5),
+                              child: Text('@' + userName,
+                                  style: TextStyle(
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              alignment: Alignment.centerRight,
+                              padding: EdgeInsets.only(right: 10, bottom: 5),
+                              child: Text(posts[index].date,
+                                  style: TextStyle(fontFamily: 'Montserrat')),
+                            ),
+                          )
+                        ])
+                      : Container(),
+                  !profPic
+                      ? posts[index].caption != ""
+                          ? Container(
+                              alignment: Alignment.centerLeft,
+                              padding: EdgeInsets.only(left: 60, bottom: 10),
+                              child: Text(posts[index].caption,
+                                  style: TextStyle(fontFamily: 'Montserrat')),
+                            )
+                          : Container()
+                      : Container()
+                ],
               ),
-              new Positioned(
-                //padding: EdgeInsets.only(top: 10),
+              Positioned(
                 top: -20,
                 right: -15,
                 child: GestureDetector(

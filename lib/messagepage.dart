@@ -1,94 +1,45 @@
-// ignore: unused_import
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wap/applicationRequest.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/message_convo.dart';
 import 'package:wap/searchPage.dart';
 import 'package:wap/settingsPage.dart';
 import 'package:wap/home_page.dart';
-// ignore: unused_import
-import 'package:wap/searchedUser.dart';
+import 'package:wap/classtype.dart';
 import 'package:wap/profilepage.dart';
+import 'package:intl/intl.dart';
 
 class MessagePage extends StatefulWidget {
   @override
   _MessagePageState createState() => _MessagePageState();
 }
 
-class Chat {
-  final String name, lastMessage, image, time;
-  final bool isActive;
-
-  Chat({this.name, this.lastMessage, this.image, this.time, this.isActive});
-}
-
-List chatsData = [
-  Chat(
-      name: "Ana Suarez",
-      lastMessage: "Sana okay ka lang...",
-      image: "assets/images/defaultPic.png",
-      time: "3m ago",
-      isActive: false),
-  Chat(
-      name: "Lau Migallen",
-      lastMessage: "Hi mamsh...",
-      image: "assets/images/defaultPic.png",
-      time: "4m ago",
-      isActive: false),
-  Chat(
-      name: "Camille Atencio",
-      lastMessage: "Minions lng sakalam...",
-      image: "assets/images/defaultPic.png",
-      time: "5m ago",
-      isActive: false),
-  Chat(
-      name: "Almera Gascon",
-      lastMessage: "Super truest ...",
-      image: "assets/images/defaultPic.png",
-      time: "6m ago",
-      isActive: false),
-  Chat(
-      name: "Rayna Baoy",
-      lastMessage: "Halu haluuu deeer...",
-      image: "assets/images/defaultPic.png",
-      time: "7m ago",
-      isActive: false),
-  Chat(
-      name: "Minions Ito",
-      lastMessage: "Musta na kayo sa Pinas? ...",
-      image: "assets/images/defaultPic.png",
-      time: "8m ago",
-      isActive: false),
-];
-
 class _MessagePageState extends State<MessagePage> {
   ScrollController controller = ScrollController();
   int selectedIndex = 0;
   int _selectedIndex = 3;
   bool isLoading = true;
-  dynamic pic = AssetImage('assets/images/defaultPic.png');
-  String userName;
-  String userUsername;
-  String un = "WAP USER";
+  dynamic pic;
+  dynamic otherPic = AssetImage('assets/images/defaultPic.png');
   String thisname = "WAP USER";
-  String firstname = "WAP";
-  String lastname = "USER";
+  String un = "WAP_USER";
   final FirebaseAuth auth = FirebaseAuth.instance;
-  // ignore: unused_field
-  bool _isChecked = false;
+  Stream directMessageStream;
+  Stream applicationRequestStream;
 
   initState() {
     if (!mounted) {
       return;
     }
-
+    getChatrooms();
+    getChatrooms2();
     getUserData().then((value) {
       setState(() {
         isLoading = false;
       });
     }, onError: (msg) {});
-
     super.initState();
   }
 
@@ -96,34 +47,26 @@ class _MessagePageState extends State<MessagePage> {
     if (!mounted) {
       return;
     }
-    final User user = auth.currentUser;
-    final dbGet = DatabaseService(uid: user.uid);
-    dynamic uname = await dbGet.getUsername();
-    dynamic name1 = await dbGet.getName();
-    if (name1 == null) {
-      name1 = await dbGet.getName2();
-      thisname = name1;
-    } else {
-      thisname = name1;
-      name1 = await dbGet.getFName();
-      firstname = name1;
-      name1 = await dbGet.getLName();
-      lastname = name1;
-    }
 
-    setState(() {
-      un = uname;
-    });
+    final dbGet = DatabaseService(uid: auth.currentUser.uid);
+    un = await dbGet.getUsername();
+    thisname = await dbGet.getName();
+    pic = await DatabaseService(uid: auth.currentUser.uid).getPicture();
+  }
 
-    var temp = await DatabaseService(uid: user.uid).getPicture();
-    if (temp != null) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        pic = temp;
-      });
-    }
+  getChatrooms() async {
+    directMessageStream =
+        await DatabaseService(uid: auth.currentUser.uid).getLastChats();
+  }
+
+  getChatrooms2() async {
+    applicationRequestStream =
+        await DatabaseService(uid: auth.currentUser.uid).getLastChats2();
+  }
+
+  getOtherName(dynamic username) async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .getUserID(username.toString());
   }
 
   void _onItemTapped(int index) {
@@ -166,7 +109,6 @@ class _MessagePageState extends State<MessagePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
         elevation: 0,
@@ -182,189 +124,196 @@ class _MessagePageState extends State<MessagePage> {
                   end: Alignment.centerRight)),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            height: size.height * 0.198,
-            decoration: BoxDecoration(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: [Colors.teal[100], Colors.teal],
                     begin: Alignment.centerLeft,
-                    end: Alignment.centerRight)),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(left: 28, top: 7),
-                            child: CircleAvatar(
-                              radius: 40, backgroundImage: pic, //GET FROM DB
+                    end: Alignment.centerRight),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey,
+                    offset: Offset(0.0, 1.0), //(x,y)
+                    blurRadius: 6.0,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 3,
+                    width: size.width * 0.35,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10, right: 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 28, top: 7),
+                              child: CircleAvatar(
+                                radius: size.height * 0.05,
+                                backgroundImage: pic, //GET FROM DB
+                              ),
                             ),
-                          ),
-                          Container(
-                            width: (size.width - 50) * 0.7,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(left: 10),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          thisname,
-                                          //"This Name",
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            fontFamily: 'Montserrat',
+                            Container(
+                              width: (size.width - 50) * 0.7,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            thisname,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                              fontFamily: 'Montserrat',
+                                            ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 1),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
-                                            children: <Widget>[
-                                              Expanded(
-                                                child: Text(
-                                                  //GET FROM DB
-                                                  '@' + un,
-                                                  //"@username",
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    fontFamily: 'Montserrat',
+                                          Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 1),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: <Widget>[
+                                                Expanded(
+                                                  child: Text(
+                                                    //GET FROM DB
+                                                    '@' + un,
+                                                    //"@username",
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      fontFamily: 'Montserrat',
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      ],
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 18),
-                      Padding(
-                        padding: EdgeInsets.all(2),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            MaterialButton(
-                              onPressed: () {
-                                setState(() {
-                                  selectedIndex = 0;
-                                });
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.only(left: 10, right: 5),
-                                  height: size.height * 0.05,
-                                  width: (size.width * 0.35),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: Offset(0.0, 1.0), //(x,y)
-                                        blurRadius: 6.0,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text("Direct",
-                                          style: TextStyle(
-                                              fontFamily: 'Montserrat',
-                                              fontSize: 15,
-                                              color: Colors.black
-                                              //decoration: TextDecoration.underline
-                                              )),
-                                      SizedBox(width: 5),
-                                      Text("Messages",
-                                          style: TextStyle(
-                                              fontFamily: 'Montserrat',
-                                              fontSize: 15,
-                                              color: Colors.black
-                                              //decoration: TextDecoration.underline
-                                              )),
-                                    ],
-                                  )),
-                            ),
-                            MaterialButton(
-                              onPressed: () {
-                                setState(() {
-                                  selectedIndex = 1;
-                                });
-                              },
-                              child: Container(
-                                  padding: EdgeInsets.only(left: 10, right: 5),
-                                  height: size.height * 0.05,
-                                  width: (size.width * 0.35),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.rectangle,
-                                    color: Colors.grey[100],
-                                    borderRadius: BorderRadius.circular(20),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey,
-                                        offset: Offset(0.0, 1.0), //(x,y)
-                                        blurRadius: 6.0,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text("Application",
-                                          style: TextStyle(
-                                              fontFamily: 'Montserrat',
-                                              fontSize: 15,
-                                              color: Colors.black
-                                              //decoration: TextDecoration.underline
-                                              )),
-                                      SizedBox(width: 5),
-                                      Text("Notification",
-                                          style: TextStyle(
-                                              fontFamily: 'Montserrat',
-                                              fontSize: 15,
-                                              color: Colors.black
-                                              //decoration: TextDecoration.underline
-                                              )),
-                                    ],
-                                  )),
-                            )
                           ],
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 18),
+                        Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              MaterialButton(
+                                onPressed: () {
+                                  setState(() {
+                                    selectedIndex = 0;
+                                  });
+                                },
+                                child: Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.rectangle,
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          offset: Offset(0.0, 1.0), //(x,y)
+                                          blurRadius: 6.0,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text("Direct",
+                                            style: TextStyle(
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 15,
+                                                color: Colors.black)),
+                                        SizedBox(width: 5),
+                                        Text("Messages",
+                                            style: TextStyle(
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 15,
+                                                color: Colors.black)),
+                                      ],
+                                    )),
+                              ),
+                              MaterialButton(
+                                onPressed: () {
+                                  setState(() {
+                                    selectedIndex = 1;
+                                  });
+                                },
+                                child: Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.rectangle,
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey,
+                                          offset: Offset(0.0, 1.0), //(x,y)
+                                          blurRadius: 6.0,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        Text("Application",
+                                            style: TextStyle(
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 15,
+                                                color: Colors.black)),
+                                        SizedBox(width: 5),
+                                        Text("Requests",
+                                            style: TextStyle(
+                                                fontFamily: 'Montserrat',
+                                                fontSize: 15,
+                                                color: Colors.black)),
+                                      ],
+                                    )),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 5,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 10),
-          IndexedStack(
-            index: selectedIndex,
-            children: [getDirectMessages(size), getAppNotif(size)],
-          ),
-        ],
+            SizedBox(height: 10),
+            IndexedStack(
+              index: selectedIndex,
+              children: [getDirectMessages(size), getAppNotif(size)],
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
@@ -407,108 +356,134 @@ class _MessagePageState extends State<MessagePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                  onPressed: () {},
-                  child: Text("Select All",
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontFamily: 'Montserrat',
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline))),
-              IconButton(icon: Icon(Icons.delete_outline), onPressed: () {})
-            ],
-          ),
           Container(
-              height: size.height * 0.55,
-              child: ListView.builder(
-                itemCount: chatsData.length,
-                physics: BouncingScrollPhysics(),
-                itemBuilder: (context, index) => ChatCard(
-                    chat: chatsData[index],
-                    press: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => MessageConvo())),
-                    longPress: () {}),
-                /*{return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 10),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                  activeColor: Colors.teal,
-                                  checkColor: Colors.white,
-                                  value: false,
-                                  onChanged: (bool value) {
-                                    /*setState(() {
-                                      _isChecked = value;
-                                    });*/
-                                  }),
-                              CircleAvatar(
-                                radius: 35,
-                                backgroundImage:
-                                    AssetImage(chatsData[index].image),
-                              ),
-                              Expanded(
-                                  child: Padding(
-                                padding: const EdgeInsets.only(left: 10),
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(chatsData[index].name,
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              fontFamily: 'Montserrat')),
-                                      SizedBox(height: 5),
-                                      Opacity(
-                                        opacity: 0.7,
-                                        child: Text(
-                                          chatsData[index].lastMessage,
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              fontFamily: 'Montserrat'),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ]),
-                              )),
-                              Opacity(
-                                  opacity: 0.6,
-                                  child: Text(
-                                    chatsData[index].time,
-                                    style: TextStyle(fontSize: 12),
-                                  )),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Container(
-                            height: 0.5,
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            decoration: BoxDecoration(
-                              color: Colors.teal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }*/
-              )),
+            padding: const EdgeInsets.only(left: 70, right: 70),
+            decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(10)),
+            child: Text("Private Messages",
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[50])),
+          ),
+          StreamBuilder(
+            stream: directMessageStream,
+            builder: (context, snapshot) {
+              return snapshot.hasData
+                  ? Container(
+                      height: size.height * 0.55,
+                      child: ListView.builder(
+                          padding: EdgeInsets.only(bottom: 10, top: 10),
+                          itemCount: snapshot.data.docs.length,
+                          itemBuilder: (context, index) {
+                            DocumentSnapshot ds = snapshot.data.docs[index];
+                            String formattedDate = DateFormat.yMMMd()
+                                .format(ds["lastMessageSendTs"].toDate());
+                            String formattedTime = DateFormat("h:mma")
+                                .format(ds["lastMessageSendTs"].toDate());
+                            List users = ds["users"];
+                            int inx = users.indexOf(un);
+                            inx == 0 ? inx = 1 : inx = 0;
+                            return ChatCard(
+                                chat: Chat(
+                                    seen: ds["lastMessageSeen"],
+                                    name: ds["users"][inx].toString(),
+                                    sentByMe: ds["lastMessageSentby"] == un,
+                                    lastMessage: ds["lastMessage"],
+                                    image: otherPic,
+                                    time: formattedDate + " " + formattedTime),
+                                press: () async {
+                                  dynamic id = await getOtherName(
+                                      ds["users"][inx].toString());
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              MessageConvo(id)));
+                                },
+                                longPress: () {});
+                          }))
+                  : Center(child: CircularProgressIndicator());
+            },
+          ),
         ],
       ),
     );
   }
 
   getAppNotif(size) {
-    return Text("Application Notification");
+    return Container(
+      margin: EdgeInsets.only(left: 20, right: 20, top: 5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(left: 70, right: 70),
+            decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: Colors.teal,
+                borderRadius: BorderRadius.circular(10)),
+            child: Text("Application Messages",
+                style: TextStyle(
+                    fontFamily: 'Montserrat',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal[50])),
+          ),
+          StreamBuilder(
+            stream: applicationRequestStream,
+            builder: (context, snapshot) {
+              return snapshot.hasData
+                  ? Container(
+                      height: size.height * 0.55,
+                      child: ListView.builder(
+                          padding: EdgeInsets.only(bottom: 10, top: 10),
+                          itemCount: snapshot.data.docs.length,
+                          itemBuilder: (context, index) {
+                            DocumentSnapshot ds = snapshot.data.docs[index];
+                            List users = ds["users"];
+                            int inx = users.indexOf(un);
+                            inx == 0 ? inx = 1 : inx = 0;
+                            String formattedDate = DateFormat.yMMMd()
+                                .format(ds["lastMessageSendTs"].toDate());
+                            String formattedTime = DateFormat("h:mma")
+                                .format(ds["lastMessageSendTs"].toDate());
+                            return ChatCard(
+                                chat: Chat(
+                                  seen: ds["lastMessageSeen"],
+                                  name: ds["users"][inx].toString(),
+                                  lastMessage: ds["lastMessage"],
+                                  sentByMe: ds["lastMessageSentby"] == un,
+                                  image: otherPic,
+                                  time: formattedDate + " " + formattedTime,
+                                ),
+                                press: () async {
+                                  dynamic id = await getOtherName(
+                                      ds["users"][inx].toString());
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              ApplicationRequest(
+                                                ownerID: id,
+                                                petID: ds["pet ID"],
+                                                petName: ds["pet name"],
+                                              )));
+                                },
+                                longPress: () {});
+                          }))
+                  : snapshot != null
+                      ? Center(child: CircularProgressIndicator())
+                      : Container(child: Text("No Messages"));
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   showDialogDelete() {
@@ -552,19 +527,6 @@ class _MessagePageState extends State<MessagePage> {
                                         style: TextStyle(
                                             fontFamily: 'Montserrat')),
                                     onPressed: () {
-                                      print(selectedIndex);
-                                      /* setState(() {
-                                        if (selectedIndex.length ==
-                                            pets.length) {
-                                          _isChecked.clear();
-                                          pets.clear();
-                                        } else {
-                                          selectedIndex.forEach((element) {
-                                            _isChecked.removeAt(element - 1);
-                                            pets.removeAt(element - 1);
-                                          });
-                                        }
-                                      });*/
                                       Navigator.pop(context);
                                     }),
                                 MaterialButton(
@@ -616,65 +578,196 @@ class ChatCard extends StatelessWidget {
   final VoidCallback press;
   final VoidCallback longPress;
 
+  Future<UserDetails> getPhoto() async {
+    String uid = await DatabaseService().getUserID(chat.name.toString());
+    return UserDetails(
+        fullName: await DatabaseService(uid: uid).getName(),
+        image: await DatabaseService(uid: uid).getPicture());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: press,
-      onLongPress: longPress,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 35,
-                  backgroundImage: AssetImage(chat.image),
-                ),
-                Expanded(
-                    child: Padding(
-                  padding: const EdgeInsets.only(left: 10),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+    return FutureBuilder(
+        future: getPhoto(),
+        builder: (BuildContext context, AsyncSnapshot<UserDetails> snapshot) {
+          if (snapshot.hasData) {
+            return InkWell(
+              onTap: press,
+              onLongPress: longPress,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        Text(chat.name,
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Montserrat')),
-                        SizedBox(height: 5),
-                        Opacity(
-                          opacity: 0.7,
-                          child: Text(
-                            chat.lastMessage,
-                            style: TextStyle(
-                                fontSize: 15, fontFamily: 'Montserrat'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundImage: snapshot.data.image,
                         ),
-                      ]),
-                )),
-                Opacity(
-                    opacity: 0.6,
-                    child: Text(
-                      chat.time,
-                      style: TextStyle(fontSize: 12),
-                    )),
-              ],
-            ),
-            SizedBox(height: 20),
-            Container(
-              height: 0.5,
-              width: MediaQuery.of(context).size.width * 0.9,
-              decoration: BoxDecoration(
-                color: Colors.teal,
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(children: [
+                                  Flexible(
+                                      child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(snapshot.data.fullName,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: chat.sentByMe
+                                                ? Colors.black
+                                                : !chat.seen
+                                                    ? Colors.teal
+                                                    : Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Montserrat')),
+                                  )),
+                                  Container(
+                                    alignment: Alignment.centerRight,
+                                    child: Opacity(
+                                        opacity: 0.6,
+                                        child: Text(
+                                          chat.time,
+                                          style: TextStyle(fontSize: 12),
+                                        )),
+                                  ),
+                                ]),
+                                SizedBox(height: 5),
+                                Container(
+                                  child: Opacity(
+                                    opacity: 0.7,
+                                    child: Text(
+                                      chat.lastMessage,
+                                      style: TextStyle(
+                                          color: chat.sentByMe
+                                              ? Colors.black
+                                              : !chat.seen
+                                                  ? Colors.teal
+                                                  : Colors.black,
+                                          fontSize: 15,
+                                          fontFamily: 'Montserrat'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ]),
+                        )),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Container(
+                      height: 0.5,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      decoration: BoxDecoration(
+                        color: Colors.teal,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
+            );
+          } else {
+            return InkWell(
+              onTap: press,
+              onLongPress: longPress,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundImage: chat.image,
+                        ),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(children: [
+                                  Expanded(
+                                    child: Text(chat.name,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            color: chat.sentByMe
+                                                ? Colors.black
+                                                : !chat.seen
+                                                    ? Colors.teal
+                                                    : Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Montserrat')),
+                                  ),
+                                  chat.sentByMe
+                                      ? Container()
+                                      : !chat.seen
+                                          ? Container(
+                                              padding:
+                                                  EdgeInsets.only(right: 3),
+                                              child: Icon(
+                                                Icons.circle,
+                                                size: 10,
+                                                color: Colors.teal,
+                                              ),
+                                            )
+                                          : Container(),
+                                  Container(
+                                    alignment: Alignment.centerRight,
+                                    child: Opacity(
+                                        opacity: 0.6,
+                                        child: Text(
+                                          chat.time,
+                                          style: TextStyle(fontSize: 12),
+                                        )),
+                                  ),
+                                ]),
+                                SizedBox(height: 5),
+                                Container(
+                                  child: Opacity(
+                                    opacity: 0.7,
+                                    child: Text(
+                                      chat.lastMessage,
+                                      style: TextStyle(
+                                          color: chat.sentByMe
+                                              ? Colors.black
+                                              : !chat.seen
+                                                  ? Colors.teal
+                                                  : Colors.black,
+                                          fontSize: 15,
+                                          fontFamily: 'Montserrat'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ]),
+                        )),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Container(
+                      height: 0.5,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      decoration: BoxDecoration(
+                        color: Colors.teal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        });
   }
 }

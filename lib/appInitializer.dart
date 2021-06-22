@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:wap/profilepage.dart';
+import 'package:wap/searchPage.dart';
 import 'package:wap/splash_screen.dart';
 
 class App extends StatelessWidget {
@@ -30,7 +30,7 @@ class App extends StatelessWidget {
                   if (user == null) {
                     return Splash();
                   } else {
-                    return ProfilePage();
+                    return SearchPage();
                   }
                 }
                 return loading(pic);
@@ -72,7 +72,7 @@ loading(AssetImage pic) {
                       height: 20,
                     ),
                     Text(
-                      "CONNECTING TO THE APP",
+                      "CONNECTING TO THE APP...",
                       style: TextStyle(color: Colors.white),
                     )
                   ]))));

@@ -16,16 +16,15 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   int _selectedIndex = 0;
-  String un = "WAP USER";
-  String thisname = "WAP USER";
-  dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool fetchedPosts = false;
   ScrollController controller = ScrollController();
   bool isLoading = true;
-  // ignore: unused_field
-  List<bool> _isChecked;
   List<dynamic> userID = [];
   List<Post> posts = [];
+  List<String> postIDs = [];
+  bool noMorePosts = false;
+  List<bool> _isLiked = [];
+  List<int> likes = [];
 
   initState() {
     super.initState();
@@ -45,29 +44,27 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     userID.add(auth.currentUser.uid);
-
-    var dbPostGet;
     final dbGet = DatabaseService(uid: auth.currentUser.uid);
-    await dbGet.getFollowing().then((value) async {
-      await Future.forEach(value, (id) async {
-        setState(() {
-          userID.add(id);
-        });
+    dbGet.getHomePosts(postIDs).then((value) {
+      posts.addAll(value);
+      postIDs.clear();
+      posts.forEach((element) {
+        postIDs.add(element.postID);
+        _isLiked.add(element.liked);
+        likes.add(element.likes);
+      });
+      setState(() {
+        fetchedPosts = true;
+        if (value.length == 0) {
+          noMorePosts = true;
+        }
       });
     });
-    // print(userID);
-    userID.forEach((element) {
-      dbPostGet = DatabaseService(uid: element);
-      dbPostGet.getPosts().then((value) async {
-        await Future.forEach(value, (post) => posts.add(post));
-        setState(() {
-          fetchedPosts = true;
-        });
-      });
-    });
+  }
 
-    print("fetched: " + fetchedPosts.toString());
-    print("posts: " + posts.length.toString());
+  addLike(String postID) async {
+    return await DatabaseService(uid: auth.currentUser.uid)
+        .addLikeToPost(postID);
   }
 
   void _onItemTapped(int index) {
@@ -110,7 +107,6 @@ class _HomePageState extends State<HomePage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: false,
         elevation: 1,
@@ -148,120 +144,203 @@ class _HomePageState extends State<HomePage> {
                   backgroundColor: Colors.white,
                 )
               : posts.isEmpty
-                  ? Container(child: Text("NO POST TO SHOW"))
+                  ? Container(
+                      alignment: Alignment.center,
+                      child: Text("NO POST TO SHOW"))
                   : ListView(
                       children: [
                         Container(
                             height: size.height * 0.8,
                             child: ListView.builder(
-                              shrinkWrap: true,
-                              controller: controller,
-                              itemCount: posts.length, //userPosts.length
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        child: Column(
-                                          children: [
-                                            new Row(
+                                shrinkWrap: true,
+                                controller: controller,
+                                itemCount: posts.length >= 2
+                                    ? posts.length + 1
+                                    : posts.length,
+                                itemBuilder: (context, index) {
+                                  if (index == posts.length &&
+                                      posts.length >= 2) {
+                                    if (noMorePosts) {
+                                      return Container(
+                                        alignment: Alignment.center,
+                                        padding: EdgeInsets.only(bottom: 10),
+                                        child: Text(
+                                          "No more posts to show",
+                                          style: TextStyle(
+                                              color: Colors.teal[500]),
+                                        ),
+                                      );
+                                    } else {
+                                      return Container(
+                                        color: Colors.teal[100],
+                                        child: TextButton(
+                                          child: Text(
+                                            "Load More",
+                                            style: TextStyle(
+                                                color: Colors.teal[500]),
+                                          ),
+                                          onPressed: () async {
+                                            await getUserPosts();
+                                          },
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(10),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            child: Column(
                                               children: [
-                                                Padding(
-                                                  padding: EdgeInsets.all(5),
-                                                  child: CircleAvatar(
-                                                    radius: 20,
-                                                    backgroundImage:
-                                                        posts[index].userPic,
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Text(
-                                                    posts[index].userName,
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 13,
-                                                      fontFamily: 'Montserrat',
+                                                new Row(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      child: CircleAvatar(
+                                                        radius: 20,
+                                                        backgroundImage:
+                                                            posts[index]
+                                                                .userPic,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            posts[index].caption != ""
-                                                ? Padding(
-                                                    padding: EdgeInsets.only(
-                                                        top: 10,
-                                                        bottom: 10,
-                                                        left: 5),
-                                                    child: Container(
-                                                      alignment:
-                                                          Alignment.topLeft,
+                                                    Expanded(
                                                       child: Text(
-                                                        posts[index].caption,
-                                                        textAlign:
-                                                            TextAlign.left,
+                                                        posts[index].userName,
                                                         style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                           fontSize: 13,
                                                           fontFamily:
                                                               'Montserrat',
                                                         ),
                                                       ),
                                                     ),
-                                                  )
-                                                : Container(),
-                                            Padding(
-                                              padding: EdgeInsets.all(5),
-                                              child: DecoratedBox(
-                                                  decoration: BoxDecoration(
-                                                      color: Colors.white,
-                                                      shape:
-                                                          BoxShape.rectangle),
-                                                  child: Image.memory(
-                                                      posts[index].postPic)),
-                                            ),
-                                            Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 15),
-                                                    child: ImageIcon(
-                                                      // alignment: Alignment.topLeft,
-                                                      AssetImage(
-                                                          'assets/images/heart.png'),
-                                                      color: Colors.teal,
-                                                    ),
-                                                  ),
-                                                  /*  IconButton(
-                                              // alignment: Alignment.topLeft,
-                                              icon: Icon(
-                                                Icons.comment,
-                                                color: Colors.teal,
-                                              ),
-                                              onPressed: () {}),*/
-                                                  IconButton(
-                                                      // alignment: Alignment.topLeft,
-                                                      icon: Icon(
-                                                        Icons
-                                                            .image_not_supported,
-                                                        color: Colors.teal,
+                                                  ],
+                                                ),
+                                                posts[index].caption != ""
+                                                    ? Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                top: 10,
+                                                                bottom: 10,
+                                                                left: 5),
+                                                        child: Container(
+                                                          alignment:
+                                                              Alignment.topLeft,
+                                                          child: Text(
+                                                            posts[index]
+                                                                .caption,
+                                                            textAlign:
+                                                                TextAlign.left,
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              fontFamily:
+                                                                  'Montserrat',
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    : Container(),
+                                                Padding(
+                                                  padding: EdgeInsets.all(5),
+                                                  child: DecoratedBox(
+                                                      decoration: BoxDecoration(
+                                                          color: Colors.white,
+                                                          shape: BoxShape
+                                                              .rectangle),
+                                                      child: Image.memory(
+                                                          posts[index]
+                                                              .postPic)),
+                                                ),
+                                                Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.start,
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 15),
+                                                        child: InkWell(
+                                                          customBorder:
+                                                              CircleBorder(),
+                                                          onTap: () async {
+                                                            await addLike(
+                                                                posts[index]
+                                                                    .postID);
+                                                            setState(() {
+                                                              _isLiked[index] =
+                                                                  !_isLiked[
+                                                                      index];
+                                                            });
+                                                            _isLiked[index]
+                                                                ? likes[index] =
+                                                                    likes[index] +
+                                                                        1
+                                                                : likes[index] =
+                                                                    likes[index] -
+                                                                        1;
+                                                          },
+                                                          child: ImageIcon(
+                                                            AssetImage(
+                                                                'assets/images/heart.png'),
+                                                            color:
+                                                                _isLiked[index]
+                                                                    ? Colors.red
+                                                                    : Colors
+                                                                        .teal,
+                                                          ),
+                                                        ),
                                                       ),
-                                                      onPressed: () {}),
-                                                ]),
-                                            Divider(),
-                                          ],
-                                        ),
+                                                      Padding(
+                                                        padding:
+                                                            EdgeInsets.only(
+                                                                left: 5),
+                                                        child: Text(
+                                                          likes[index]
+                                                                  .toString() +
+                                                              " Paw Heart",
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                          child: Container(
+                                                        margin: EdgeInsets.only(
+                                                            right: 15),
+                                                        alignment: Alignment
+                                                            .centerRight,
+                                                        child: Text(
+                                                          posts[index].date,
+                                                          textAlign:
+                                                              TextAlign.left,
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            fontFamily:
+                                                                'Montserrat',
+                                                          ),
+                                                        ),
+                                                      )),
+                                                    ]),
+                                                Divider(),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            )),
+                                    );
+                                  }
+                                })),
                       ],
                     ),
       bottomNavigationBar: BottomNavigationBar(

@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wap/profilepage.dart';
 import 'package:wap/register_account.dart';
 
@@ -16,12 +18,13 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController _emailController = TextEditingController();
   bool _secureText = true;
   final _key = GlobalKey<FormState>();
+  final _popUpKey = GlobalKey<FormState>();
   String email = "none";
   bool userExist = false;
+  bool loggingIn = false;
 
   searchUser() async {
-    // ignore: await_only_futures
-    final docSnap = await FirebaseFirestore.instance
+    final docSnap = FirebaseFirestore.instance
         .collection('users')
         .where('username', isEqualTo: _usernameController.text);
     await docSnap.get().then((value) async {
@@ -32,13 +35,12 @@ class _LoginPageState extends State<LoginPage> {
         });
       });
     });
-    print(userExist);
     if (userExist == true) {
       try {
-        // ignore: unused_local_variable
-        UserCredential userCredential;
-        userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
             email: email, password: _passwordController.text);
+        SharedPreferences shared = await SharedPreferences.getInstance();
+        shared.setString("username", _usernameController.text);
         Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -86,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
               textAlign: TextAlign.center,
             ),
             content: Text(
-              "Username not found. Please check your input and connection.",
+              "Username not found. Please check your input or internet connection and try again.",
               textAlign: TextAlign.center,
             ),
             actions: <Widget>[
@@ -102,13 +104,13 @@ class _LoginPageState extends State<LoginPage> {
         },
       );
     }
+    setState(() {
+      loggingIn = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
-    Size size;
-    size = MediaQuery.of(context).size;
     return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.teal[400],
@@ -153,30 +155,51 @@ class _LoginPageState extends State<LoginPage> {
                       SizedBox(
                         height: 20,
                       ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 150),
-                        child: Container(
-                          padding: EdgeInsets.only(top: 3, left: 3),
-                          child: MaterialButton(
-                            minWidth: double.infinity,
-                            height: 50,
-                            onPressed: () {
-                              if (_key.currentState.validate()) {
-                                searchUser();
-                              }
-                            },
-                            color: Colors.teal[100],
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50)),
-                            child: Text('Login',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 18,
-                                    fontFamily: 'Montserrat')),
-                          ),
-                        ),
-                      ),
+                      loggingIn
+                          ? Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 150),
+                              child: Container(
+                                padding: EdgeInsets.only(top: 3, left: 3),
+                                child: MaterialButton(
+                                    minWidth: double.infinity,
+                                    height: 50,
+                                    onPressed: () {},
+                                    color: Colors.teal[100],
+                                    elevation: 5,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(50)),
+                                    child: SpinKitThreeBounce(
+                                        color: Colors.white, size: 20)),
+                              ),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 150),
+                              child: Container(
+                                padding: EdgeInsets.only(top: 3, left: 3),
+                                child: MaterialButton(
+                                  minWidth: double.infinity,
+                                  height: 50,
+                                  onPressed: () {
+                                    if (_key.currentState.validate()) {
+                                      setState(() {
+                                        loggingIn = true;
+                                      });
+                                      searchUser();
+                                    }
+                                  },
+                                  color: Colors.teal[100],
+                                  elevation: 5,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(50)),
+                                  child: Text('Login',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 18,
+                                          fontFamily: 'Montserrat')),
+                                ),
+                              ),
+                            ),
                       SizedBox(height: 20),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,26 +263,30 @@ class _LoginPageState extends State<LoginPage> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(height: 50),
-                          TextFormField(
-                            validator: (value) {
-                              if (value.isEmpty) {
-                                return "Email is required";
-                              } else {
-                                return null;
-                              }
-                            },
-                            controller: _emailController,
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  borderSide:
-                                      BorderSide(color: Colors.teal[200])),
-                              fillColor: Colors.teal[300],
-                              filled: true,
-                              hintText: 'Enter your email',
-                              hintStyle: TextStyle(
-                                  color: Colors.black38,
-                                  fontFamily: 'Montserrat'),
+                          Form(
+                            key: _popUpKey,
+                            child: TextFormField(
+                              autovalidateMode: AutovalidateMode.always,
+                              validator: (value) {
+                                if (value.isEmpty) {
+                                  return "Email is required";
+                                } else {
+                                  return null;
+                                }
+                              },
+                              controller: _emailController,
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    borderSide:
+                                        BorderSide(color: Colors.teal[200])),
+                                fillColor: Colors.teal[300],
+                                filled: true,
+                                hintText: 'Enter your email',
+                                hintStyle: TextStyle(
+                                    color: Colors.black38,
+                                    fontFamily: 'Montserrat'),
+                              ),
                             ),
                           ),
                           SizedBox(height: 10),
@@ -275,8 +302,15 @@ class _LoginPageState extends State<LoginPage> {
                                   child: Text("Send reset link",
                                       style:
                                           TextStyle(fontFamily: 'Montserrat')),
-                                  onPressed: () {
-                                    createConfirm(context);
+                                  onPressed: () async {
+                                    if (_popUpKey.currentState.validate()) {
+                                      await FirebaseAuth.instance
+                                          .sendPasswordResetEmail(
+                                              email: _emailController.text);
+                                      Navigator.pop(context);
+
+                                      createConfirm(context);
+                                    }
                                   }),
                               MaterialButton(
                                   color: Colors.teal[100],
@@ -317,51 +351,50 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: Stack(
-              alignment: Alignment.topCenter,
-              clipBehavior: Clip.none,
-              children: <Widget>[
-                Container(
-                  height: MediaQuery.of(context).size.height / 4,
-                  width: MediaQuery.of(context).size.width / 1.2,
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 50),
-                        Text(
-                            "A password reset link is already sent to your email.",
-                            style: TextStyle(fontFamily: 'Montserrat')),
-                        SizedBox(height: 20),
-                        MaterialButton(
-                            color: Colors.teal[100],
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100)),
-                            child: Text("Done",
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20))),
+            child: SingleChildScrollView(
+              child: Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: <Widget>[
+                    Container(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 50),
+                            Text(
+                                "A password reset link is already sent to your email.",
                                 style: TextStyle(fontFamily: 'Montserrat')),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              Navigator.pop(context);
-                            })
-                      ],
+                            SizedBox(height: 20),
+                            MaterialButton(
+                                color: Colors.teal[100],
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(100)),
+                                child: Text("Done",
+                                    style: TextStyle(fontFamily: 'Montserrat')),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Positioned(
-                    top: -50,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.teal[200],
-                      radius: 50,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.all(Radius.circular(50)),
-                          child: Image.asset('assets/images/wap_logo.png')),
-                    ))
-              ]),
-        );
+                    Positioned(
+                        top: -50,
+                        child: CircleAvatar(
+                          backgroundColor: Colors.teal[200],
+                          radius: 50,
+                          child: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(50)),
+                              child: Image.asset('assets/images/wap_logo.png')),
+                        ))
+                  ]),
+            ));
       },
       barrierDismissible: true,
     );
@@ -395,6 +428,9 @@ class _LoginPageState extends State<LoginPage> {
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(5),
                         borderSide: BorderSide(color: Colors.teal[200])),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: BorderSide(color: Colors.teal[200])),
                     fillColor: Colors.teal[300],
                     filled: true,
                     hintText: 'Username',
@@ -426,6 +462,9 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          borderSide: BorderSide(color: Colors.teal[200])),
+                      focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(5),
                           borderSide: BorderSide(color: Colors.teal[200])),
                       fillColor: Colors.teal[300],
