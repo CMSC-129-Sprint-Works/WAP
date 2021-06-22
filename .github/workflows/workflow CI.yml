@@ -8,33 +8,39 @@ on:
 # Define the Jobs we want to run as part of this Workflow
 jobs:
   # Define our build and test Job
-   build-and-test: 
-   
+   unit-test: 
+    name: Unit tests
     # We want to run this Job on an Ubuntu VM 
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      matrix:
+        os: [ubuntu-18.04, windows-2019, macgos-10.15]
+   
     steps:
+     
       # Checkout the repository code using V1 of the standard checkout Action
       - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
-       
+   
        # Use the standard Java Action to setup Java 
       - uses: actions/setup-java@v1
         with:
           # we want the latest Java 12
           java-version: '12.x'
-
+         
+      - name: Set up Flutter 
         # Use the community Action to install Flutter
       - uses: subosito/flutter-action@v1
         with:
           # we want the stable channel
           channel: 'stable'  
-          
+  
         # Get flutter packages
       - run: flutter pub get
        # Analyze our Dart code
      # - run: flutter analyze
       # Run our tests
+      - name: Run Flutter tests
       - run: flutter test
+
 
   
