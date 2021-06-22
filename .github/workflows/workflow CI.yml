@@ -20,8 +20,7 @@ jobs:
         uses: subosito/flutter-action@v1
         with:
           flutter-version: "1.22.5"
-      - name: Format files
-        run: flutter format --set-exit-if-changed .
+ 
       - name: Analyze code
         run: flutter analyze
              flutter pub outdated
