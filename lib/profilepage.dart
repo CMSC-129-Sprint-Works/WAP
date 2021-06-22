@@ -216,7 +216,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text(
               "Profile",
-	      key: Key('Profile1'),
+              key: Key('Profile1'),
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Montserrat',
@@ -391,7 +391,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Container(
                                     child: Text(
                                       'Edit Profile',
-				      key: Key("editProfile"),
+                                      key: Key("editProfile"),
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontFamily: 'Montserrat',
@@ -636,7 +636,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Nickname",
-			  key: Key("nickname"),
+                          key: Key("nickname"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
@@ -672,7 +672,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Address",
-			  key: Key("address"),
+                          key: Key("address"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
@@ -708,7 +708,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Contact Details",
-			  key: Key("contact"),
+                          key: Key("contact"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
@@ -743,8 +743,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       padding: const EdgeInsets.only(top: 15),
                       child: Text(
                         "Email Address",
-			                key: Key("emailAddProfilePage")),
-                      style: TextStyle(
+                        key: Key("emailAddProfilePage"),
+                        style: TextStyle(
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
                             fontSize: 18),
