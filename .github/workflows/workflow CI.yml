@@ -37,17 +37,4 @@ jobs:
       # Run our tests
       - run: flutter test
 
-   android-integration-test:
-      name: run integration test on Android emulator
-      runs-on: ubuntu-latest
-      steps:
-    
-        #GitHub Action for installing, configuring and running Android Emulators (work only Mac OS)
-        #https://github.com/ReactiveCircus/android-emulator-runner
-      - uses: reactivecircus/android-emulator-runner@v1
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: flutter drive --driver=test_driver/integration_test_driver.dart --target=integration_test/app_test.dart
+  
