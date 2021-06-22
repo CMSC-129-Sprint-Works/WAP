@@ -31,6 +31,8 @@ jobs:
     # Get flutter dependencies.
     - run: flutter pub get
            flutter format lib/** --set-exit-if-changed
+           flutter config --no-analytics
+           flutter config
            flutter analyze --no-pub
            flutter test --no-pub
     
