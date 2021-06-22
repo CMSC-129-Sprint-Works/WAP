@@ -19,8 +19,9 @@ void main() {
       //clicking edit profile icon
       final Finder editProfileButton = find.byKey(Key('editProfile'));
       await tester.tap(editProfileButton);
+
       expect(find.byIcon(Icons.bookmark),
-          findsOneWidget); //checking the existence of bookmark icon
+          findsWidgets); //checking the existence of bookmark icon
       expect(find.byIcon(Icons.grid_on_rounded),
           findsWidgets); //checking the existence of grid_on_roundeds (I found 2)
 

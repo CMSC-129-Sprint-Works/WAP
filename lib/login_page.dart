@@ -210,6 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               child: Text(
                                 "Forgot Password",
+                                key: Key('passwordforgotten'),
                                 style: TextStyle(
                                     fontFamily: 'Montserrat',
                                     decoration: TextDecoration.underline),
@@ -300,6 +301,7 @@ class _LoginPageState extends State<LoginPage> {
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(100)),
                                   child: Text("Send reset link",
+                                      key: Key('reset link'),
                                       style:
                                           TextStyle(fontFamily: 'Montserrat')),
                                   onPressed: () async {
@@ -412,6 +414,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   //USERNAME
                   //Include invalid username in validator
+                  key: Key('usernameforLogin'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -445,6 +448,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextFormField(
                   //PASSWORD
                   //Include invalid password in validator
+                  key: Key('passwordValidator'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
