@@ -11,11 +11,7 @@ jobs:
    unit-test: 
     name: Unit tests
     # We want to run this Job on an Ubuntu VM 
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix:
-        os: [ubuntu-18.04, windows-2019, macgos-10.15]
-   
+    runs-on: ubuntu-latest
     steps:
      
       # Checkout the repository code using V1 of the standard checkout Action
