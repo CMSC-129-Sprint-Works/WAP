@@ -1,8 +1,7 @@
-name: Tests
+name: Final Workflow
 on:
   push:
-    branches:
-    - master
+    branches: [dev]
   pull_request:
 
 jobs:
