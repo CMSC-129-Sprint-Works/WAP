@@ -205,12 +205,12 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           TextButton(
+                              key: Key('passwordforgotten'),
                               style: TextButton.styleFrom(
                                 primary: Colors.white,
                               ),
                               child: Text(
                                 "Forgot Password",
-                                key: Key('passwordforgotten'),
                                 style: TextStyle(
                                     fontFamily: 'Montserrat',
                                     decoration: TextDecoration.underline),
@@ -267,6 +267,7 @@ class _LoginPageState extends State<LoginPage> {
                           Form(
                             key: _popUpKey,
                             child: TextFormField(
+                              key: Key('Enter your email'),
                               autovalidateMode: AutovalidateMode.always,
                               validator: (value) {
                                 if (value.isEmpty) {
@@ -412,9 +413,9 @@ class _LoginPageState extends State<LoginPage> {
               key: _key,
               child: Column(children: <Widget>[
                 TextFormField(
+                  key: Key('usernameforLogin'),
                   //USERNAME
                   //Include invalid username in validator
-                  key: Key('usernameforLogin'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -447,8 +448,8 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
-                  //Include invalid password in validator
                   key: Key('passwordValidator'),
+                  //Include invalid password in validator
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";

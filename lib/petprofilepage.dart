@@ -5,6 +5,7 @@ import 'package:wap/applicationRequest.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/classtype.dart';
+import 'package:wap/editpetprofile.dart';
 
 class PetProfilePage extends StatefulWidget {
   final Pet pet;
@@ -24,7 +25,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
 
   initState() {
     super.initState();
-    ;
   }
 
   getMyData() async {
@@ -96,7 +96,6 @@ class _PetProfilePageState extends State<PetProfilePage> {
                     alignment: Alignment.topLeft,
                   ),
                   Container(
-		    key: Key("petProfilePic"),
                     margin: EdgeInsets.only(top: 40),
                     alignment: Alignment.center,
                     height: MediaQuery.of(context).size.height / 2.25,
@@ -184,7 +183,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 5),
                                   Text("Adopt",
-				      key: Key("adoptButton"),
+                                      key: Key('adoptButton'),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -232,7 +231,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                   ),
                                   SizedBox(width: 8),
                                   Text("Save",
-				      key: Key("saveButton"),
+                                      key: Key('saveButton'),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -249,7 +248,11 @@ class _PetProfilePageState extends State<PetProfilePage> {
                       alignment: Alignment.center,
                       child: GestureDetector(
                         onTap: () {
-                          print("Edit");
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      EditPetProfilePage(pet: widget.pet)));
                         },
                         child: Container(
                             padding: EdgeInsets.only(left: 10, right: 5),
@@ -283,7 +286,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                 SizedBox(width: 15),
                                 Expanded(
                                   child: Text("Edit",
-	   			      key: Key("edit"),
+                                      key: Key('editButton3'),
                                       style: TextStyle(
                                           fontFamily: 'Fredoka One',
                                           fontSize: 20,
@@ -308,7 +311,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("About Me",
-			      key: Key("aboutMe"),
+                              key: Key('aboutMe2'),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -325,7 +328,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Special Needs",
-			      key: Key("needs"),
+                              key: Key("needs"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -342,7 +345,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                             });
                           },
                           child: Text("Characteristics",
-			      key: Key("char"),
+                              key: Key("characteristics"),
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontFamily: 'Montserrat',
@@ -419,7 +422,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Breed: ",
-		    key: Key("breed"),
+                    key: Key('breed'),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -435,7 +438,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Age: ",
-		    key: Key("age"),
+                    key: Key('age'),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -451,8 +454,8 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Sex: ",
-		     key: Key("sex"),
-		     style: TextStyle(
+                    key: Key('sex'),
+                    style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
                         fontWeight: FontWeight.bold),
@@ -467,7 +470,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                 children: [
                   Text(
                     "Medical History: ",
-		    key: Key("medicalHistory"),
+                    key: Key('medicalHistory'),
                     style: TextStyle(
                         fontFamily: 'Montserrat',
                         fontSize: 20,
@@ -557,7 +560,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                           children: [
                             SizedBox(height: 50),
                             Text("Saved in Bookmarks",
-				key: Key("savedInBookmarks"),
+                                key: Key('bookmarked'),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             MaterialButton(
@@ -695,6 +698,7 @@ class _PetProfilePageState extends State<PetProfilePage> {
                                           "existing") {
                                         var lastMessageTs = DateTime.now();
                                         Map<String, dynamic> messageInfoMap = {
+                                          "messageType": "text",
                                           "message": myUserName +
                                               " sent an adoption application request",
                                           "sentBy": myUserName,

@@ -15,7 +15,7 @@ class SetupProfilePage2 extends StatefulWidget {
 
 class _SetupProfilePageState2 extends State<SetupProfilePage2> {
   TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _nicknameController = TextEditingController();
+
   TextEditingController _addressController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController();
   final _key = GlobalKey<FormState>();
@@ -46,24 +46,22 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
       if (pdf != null) {
         _pdfFile = File(pdf.files.single.path);
         _pdfFile = _pdfFile.readAsBytesSync();
-        fileName2 = pdf.files.first.name;
+        fileName2 = pdf.paths.first.split('/').last;
       }
     });
   }
 
   updateFile() async {
-    fileName2 = auth.currentUser.uid;
+    String profID = auth.currentUser.uid;
     Reference storageReference =
-        FirebaseStorage.instance.ref().child("Certificates/$fileName2");
-    // ignore: unused_local_variable
-    final UploadTask uploadTask = storageReference.putData(_pdfFile);
+        FirebaseStorage.instance.ref().child("Certificates/$profID/$fileName2");
+    await storageReference.putData(_pdfFile);
   }
 
   updatePicture() async {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
-    // ignore: unused_local_variable
-    final UploadTask uploadTask = storageReference.putFile(_imageFile);
+    await storageReference.putFile(_imageFile);
   }
 
   Future updateProfile(BuildContext context) async {
@@ -75,8 +73,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
     if (_pdfFile != null) {
       await updateFile();
     }
-    await DatabaseService(uid: user.uid).updateUserInfo1(
-        _nicknameController.text,
+    await DatabaseService(uid: user.uid).updateUserInfo2(
         _addressController.text,
         _phoneNumberController.text,
         _descriptionController.text);
@@ -116,7 +113,8 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
         width: double.infinity,
         child: Column(children: <Widget>[
           Text(
-            'Set Up Profile',
+            'Setup Your Profile',
+            key: Key('Profile2'),
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Fredoka One',
@@ -143,6 +141,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(50)),
                 child: Text("Submit",
+                    key: Key(' submitButton2'),
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
@@ -176,35 +175,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
               key: _key,
               child: Column(children: <Widget>[
                 TextFormField(
-                  //USERNAME
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return "This field is required";
-                    } else {
-                      return null;
-                    }
-                  },
-                  controller: _nicknameController,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    fontFamily: 'Montserrat',
-                  ),
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5),
-                        borderSide: BorderSide(color: Colors.teal[200])),
-                    fillColor: Colors.teal[300],
-                    filled: true,
-                    hintText: 'Nickname',
-                    hintStyle: TextStyle(
-                        color: Colors.black38, fontFamily: 'Montserrat'),
-                    contentPadding:
-                        EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-                    prefixIcon: Icon(Icons.person_rounded, color: Colors.white),
-                  ),
-                ),
-                SizedBox(height: 10),
-                TextFormField(
+                  key: Key('address2'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "This field is required";
@@ -233,6 +204,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
                 ),
                 SizedBox(height: 10),
                 TextFormField(
+                  key: Key('contact2'),
                   validator: (value) {
                     return validateMobile(value);
                   },
@@ -258,6 +230,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
                 ),
                 SizedBox(height: 10),
                 TextFormField(
+                  key: Key('description2'),
                   maxLines: 2,
                   maxLength: 60,
                   validator: (value) {
@@ -291,6 +264,7 @@ class _SetupProfilePageState2 extends State<SetupProfilePage2> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       TextButton(
+                        key: Key('profilePic2'),
                         onPressed: () async {
                           await uploadImage(context);
                         },

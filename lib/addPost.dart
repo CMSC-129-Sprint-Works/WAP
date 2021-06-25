@@ -32,6 +32,8 @@ class _AddPostPageState extends State<AddPostPage> {
   dynamic pic = AssetImage('assets/images/defaultPic.png');
   bool uploading = false;
   bool successUpload = false;
+  bool accountStatus;
+  String accountType;
 
   var uploadTask;
 
@@ -56,22 +58,10 @@ class _AddPostPageState extends State<AddPostPage> {
     }
     final User user = auth.currentUser;
     final dbGet = DatabaseService(uid: user.uid);
-    dynamic name1 = await dbGet.getName();
-    if (name1 == null) {
-      name1 = await dbGet.getName2();
-      thisname = name1;
-    } else {
-      thisname = name1;
-    }
-    var temp = await DatabaseService(uid: user.uid).getPicture();
-    if (temp != null) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        pic = temp;
-      });
-    }
+    thisname = await dbGet.getName();
+    accountType = await dbGet.getAccountType();
+    accountStatus = await dbGet.getAccountStatus();
+    pic = await DatabaseService(uid: user.uid).getPicture();
   }
 
   getImageGallery() async {
@@ -116,16 +106,22 @@ class _AddPostPageState extends State<AddPostPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: true,
         elevation: 1,
         title: Text(
           "Add Post",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: ListView(
@@ -147,19 +143,38 @@ class _AddPostPageState extends State<AddPostPage> {
                         ),
                       ),
                       Expanded(
-                        child: Text(
-                          thisname,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            fontFamily: 'Montserrat',
-                          ),
+                        child: Row(
+                          children: [
+                            Text(
+                              thisname,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                fontFamily: 'Montserrat',
+                              ),
+                            ),
+                            SizedBox(width: 5),
+                            accountType == "institution" &&
+                                    accountStatus == true
+                                ? Padding(
+                                    padding: EdgeInsets.all(5),
+                                    child: Container(
+                                      child: Image.asset(
+                                        "assets/images/verified.png",
+                                        height: 20,
+                                        matchTextDirection: true,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ))
+                                : SizedBox(width: 1)
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ]),
               ),
+              SizedBox(height: 10),
               buildForm(),
               (isShowSticker
                   ? Padding(

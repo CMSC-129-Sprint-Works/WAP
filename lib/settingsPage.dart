@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wap/bookmarkPage.dart';
 import 'package:wap/database.dart';
 
 import 'package:wap/home_page.dart';
@@ -16,6 +17,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  final auth = FirebaseAuth.instance;
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _newPasswordController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
@@ -23,6 +25,30 @@ class _SettingsPageState extends State<SettingsPage> {
   final _key2 = GlobalKey<FormState>();
   final _key3 = GlobalKey<FormState>();
   int _selectedIndex = 4;
+
+  String myUsername;
+  Stream messageStream;
+  Stream appRequestsStream;
+
+  @override
+  void initState() {
+    myData();
+    super.initState();
+  }
+
+  myData() async {
+    var stream =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler();
+    var stream2 =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler2();
+    var myUname =
+        await DatabaseService(uid: auth.currentUser.uid).getUsername();
+    setState(() {
+      messageStream = stream;
+      appRequestsStream = stream2;
+      myUsername = myUname;
+    });
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -61,16 +87,17 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    _selectedIndex = 4;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.teal[100],
         centerTitle: true,
-        automaticallyImplyLeading: true,
+        automaticallyImplyLeading: false,
         elevation: 1,
         title: Text(
           "Settings",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
         ),
@@ -101,6 +128,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
             ]),
+            SizedBox(height: 20),
             Row(
               children: [
                 Icon(
@@ -126,8 +154,8 @@ class _SettingsPageState extends State<SettingsPage> {
             SizedBox(
               height: 10,
             ),
-            buildAccountOptionRow2(context, "Update User Credentials"),
-            buildAccountOptionRow3(context, "Privacy and security"),
+            buildAccountOptionRow2(context, "Update User Password"),
+            buildAccountOptionRow3(context, "Manage Bookmarks"),
             buildAccountOptionRow4(context, "Disclaimer and Copyright"),
             SizedBox(
               height: 40,
@@ -142,7 +170,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   width: 8,
                 ),
                 Text(
-                  "Notifications",
+                  "Notifications (BETA)",
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -206,8 +234,132 @@ class _SettingsPageState extends State<SettingsPage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
             label: 'Messages',
+            icon: Stack(children: [
+              Icon(Icons.chat_bubble),
+              StreamBuilder(
+                  stream: messageStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      List<DocumentSnapshot> dsList = snapshot.data.docs;
+                      int count = 0;
+
+                      return StreamBuilder(
+                          stream: appRequestsStream,
+                          builder: (context2, snapshot2) {
+                            if (snapshot2.hasData) {
+                              List<DocumentSnapshot> dsList2 =
+                                  snapshot2.data.docs;
+
+                              if (dsList2.length > 0) {
+                                dsList2.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              }
+                            } else {
+                              if (dsList.length > 0) {
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                return SizedBox();
+                              }
+                            }
+                          });
+                    } else {
+                      return SizedBox();
+                    }
+                  }),
+            ]),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -251,7 +403,7 @@ class _SettingsPageState extends State<SettingsPage> {
   GestureDetector buildAccountOptionRow2(BuildContext context, String title) {
     return GestureDetector(
       onTap: () async {
-        await createPopUp(context);
+        await createPopUp2_2(context);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -279,7 +431,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   GestureDetector buildAccountOptionRow3(BuildContext context, String title) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => BookmarkPage()));
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: Row(
@@ -412,12 +567,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool passwordChanged = false;
 
-  changeUsername() async {
-    print("ahm");
-    return await DatabaseService(uid: FirebaseAuth.instance.currentUser.uid)
-        .updateUsername(_userNameController.text);
-  }
-
   changePassword() async {
     return await DatabaseService(uid: FirebaseAuth.instance.currentUser.uid)
         .updatePassword(_newPasswordController.text)
@@ -517,9 +666,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                       else if (goCode == 2)
                                         createConfirm(context, false, 2);
                                       else {
-                                        changeUname
-                                            ? await changeUsername()
-                                            : await changePassword();
+                                        await changePassword();
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         createConfirm(context, true, 0);
@@ -546,11 +693,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   Positioned(
                       top: -50,
                       child: CircleAvatar(
-                        backgroundColor: Colors.teal[200],
+                        backgroundColor: Colors.transparent,
                         radius: 50,
                         child: ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(50)),
-                            child: Image.asset('assets/images/confused.png')),
+                            child: Image.asset('assets/images/update.png')),
                       ))
                 ]),
           ),
@@ -657,216 +804,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   Positioned(
                       top: -50,
                       child: CircleAvatar(
-                        backgroundColor: Colors.teal[200],
+                        backgroundColor: Colors.transparent,
                         radius: 50,
                         child: ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(50)),
-                            child: Image.asset('assets/images/confused.png')),
-                      ))
-                ]),
-          ),
-        );
-      },
-      barrierDismissible: true,
-    );
-  }
-
-  createPopUp2(BuildContext context) {
-    bool userNameTaken = false;
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: SingleChildScrollView(
-            child: Stack(
-                alignment: Alignment.topCenter,
-                clipBehavior: Clip.none,
-                children: <Widget>[
-                  Container(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 50),
-                          Text("Username",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal,
-                                  fontFamily: 'Montserrat')),
-                          SizedBox(height: 10),
-                          Form(
-                            key: _key1,
-                            autovalidateMode: AutovalidateMode.always,
-                            child: TextFormField(
-                              autovalidateMode: AutovalidateMode.always,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return "Username is required";
-                                } else if (value.length > 32) {
-                                  return "Character limit reached (32 characters)";
-                                } else if (userNameTaken == true) {
-                                  return "Username is already used";
-                                } else {
-                                  return null;
-                                }
-                              },
-                              onChanged: (value) async {
-                                if (userNameTaken == true)
-                                  userNameTaken = false;
-                              },
-                              controller: _userNameController,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide:
-                                        BorderSide(color: Colors.teal[200])),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5),
-                                    borderSide:
-                                        BorderSide(color: Colors.teal[200])),
-                                hintText: 'Type New Username',
-                                hintStyle: TextStyle(
-                                    color: Colors.black38,
-                                    fontFamily: 'Montserrat'),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: <Widget>[
-                              MaterialButton(
-                                  color: Colors.teal[100],
-                                  elevation: 5,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100)),
-                                  child: Text("Proceed",
-                                      style:
-                                          TextStyle(fontFamily: 'Montserrat')),
-                                  onPressed: () async {
-                                    if (_key1.currentState.validate()) {
-                                      final docSnap = await FirebaseFirestore
-                                          .instance
-                                          .collection('users')
-                                          .where('username',
-                                              isEqualTo:
-                                                  _userNameController.text)
-                                          .get();
-
-                                      if (docSnap.size == 0) {
-                                        Navigator.pop(context);
-
-                                        createPopUp3(context, true);
-                                      } else {
-                                        setState(() {
-                                          userNameTaken = true;
-                                        });
-                                      }
-                                    }
-                                  }),
-                              MaterialButton(
-                                  color: Colors.teal[100],
-                                  elevation: 5,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100)),
-                                  child: Text("Cancel",
-                                      style:
-                                          TextStyle(fontFamily: 'Montserrat')),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  }),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                      top: -50,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.teal[200],
-                        radius: 50,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                            child: Image.asset('assets/images/confused.png')),
-                      ))
-                ]),
-          ),
-        );
-      },
-      barrierDismissible: true,
-    );
-  }
-
-  createPopUp(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20))),
-          child: SingleChildScrollView(
-            child: Stack(
-                alignment: Alignment.topCenter,
-                clipBehavior: Clip.none,
-                children: <Widget>[
-                  Container(
-                    child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(height: 50),
-                          MaterialButton(
-                              color: Colors.teal[100],
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Text("Change Username",
-                                  style: TextStyle(fontFamily: 'Montserrat')),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                createPopUp2(context);
-                              }),
-                          SizedBox(height: 10),
-                          MaterialButton(
-                              color: Colors.teal[100],
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Text("Change Password",
-                                  style: TextStyle(fontFamily: 'Montserrat')),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                createPopUp2_2(context);
-                              }),
-                          SizedBox(height: 10),
-                          MaterialButton(
-                              color: Colors.teal[100],
-                              elevation: 5,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Text("Cancel",
-                                  style: TextStyle(fontFamily: 'Montserrat')),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              }),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                      top: -50,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.teal[200],
-                        radius: 50,
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
-                            child: Image.asset('assets/images/confused.png')),
+                            child: Image.asset('assets/images/update.png')),
                       ))
                 ]),
           ),

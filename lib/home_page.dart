@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/classtype.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,18 +26,35 @@ class _HomePageState extends State<HomePage> {
   bool noMorePosts = false;
   List<bool> _isLiked = [];
   List<int> likes = [];
+  String myUsername;
+  Stream messageStream;
+  Stream appRequestsStream;
 
   initState() {
     super.initState();
     if (!mounted) {
       return;
     }
-
+    myData();
     getUserPosts().then((value) {
       setState(() {
         isLoading = false;
       });
     }, onError: (msg) {});
+  }
+
+  myData() async {
+    var stream =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler();
+    var stream2 =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler2();
+    var myUname =
+        await DatabaseService(uid: auth.currentUser.uid).getUsername();
+    setState(() {
+      messageStream = stream;
+      appRequestsStream = stream2;
+      myUsername = myUname;
+    });
   }
 
   getUserPosts() async {
@@ -105,6 +123,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    _selectedIndex = 0;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -209,7 +228,7 @@ class _HomePageState extends State<HomePage> {
                                                                 .userPic,
                                                       ),
                                                     ),
-                                                    Expanded(
+                                                    Flexible(
                                                       child: Text(
                                                         posts[index].userName,
                                                         style: TextStyle(
@@ -221,6 +240,23 @@ class _HomePageState extends State<HomePage> {
                                                         ),
                                                       ),
                                                     ),
+                                                    posts[index].accountStatus
+                                                        ? Padding(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    5),
+                                                            child: Container(
+                                                              child:
+                                                                  Image.asset(
+                                                                "assets/images/verified.png",
+                                                                height: 15,
+                                                                matchTextDirection:
+                                                                    true,
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                              ),
+                                                            ))
+                                                        : SizedBox()
                                                   ],
                                                 ),
                                                 posts[index].caption != ""
@@ -304,7 +340,7 @@ class _HomePageState extends State<HomePage> {
                                                         child: Text(
                                                           likes[index]
                                                                   .toString() +
-                                                              " Paw Heart",
+                                                              " Paw Hearts",
                                                           textAlign:
                                                               TextAlign.left,
                                                           style: TextStyle(
@@ -358,8 +394,132 @@ class _HomePageState extends State<HomePage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
             label: 'Messages',
+            icon: Stack(children: [
+              Icon(Icons.chat_bubble),
+              StreamBuilder(
+                  stream: messageStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      List<DocumentSnapshot> dsList = snapshot.data.docs;
+                      int count = 0;
+
+                      return StreamBuilder(
+                          stream: appRequestsStream,
+                          builder: (context2, snapshot2) {
+                            if (snapshot2.hasData) {
+                              List<DocumentSnapshot> dsList2 =
+                                  snapshot2.data.docs;
+
+                              if (dsList2.length > 0) {
+                                dsList2.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              }
+                            } else {
+                              if (dsList.length > 0) {
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          myUsername &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                return SizedBox();
+                              }
+                            }
+                          });
+                    } else {
+                      return SizedBox();
+                    }
+                  }),
+            ]),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

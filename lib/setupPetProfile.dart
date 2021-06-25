@@ -48,13 +48,10 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
   }
 
   addPicture(var namefile) async {
-    // ignore: unused_local_variable
-    String id = auth.currentUser.uid;
     fileName = namefile;
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Pet Profile Pictures/$fileName");
-    // ignore: unused_local_variable
-    final uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
+    await storageReference.putFile(_imageFile).whenComplete(() => {
           Navigator.pushReplacement(
               context, MaterialPageRoute(builder: (context) => ProfilePage()))
         });
@@ -86,15 +83,23 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
       //to add pet name, ages, sex, breed, characteristics
       //medical history, special needs, and other important info about the pet
       appBar: AppBar(
-        elevation: 1,
         backgroundColor: Colors.teal[100],
         centerTitle: true,
+        automaticallyImplyLeading: true,
+        elevation: 1,
         title: Text(
-          'Setup Pet Profile',
+          "Setup Pet Profile",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: SingleChildScrollView(
@@ -188,13 +193,12 @@ class _SetupPetProfileState extends State<SetupPetProfile> {
                                     child: MaterialButton(
                                       onPressed: () {
                                         if (_key.currentState.validate()) {
-                                          _imageFile != null
-                                              ? setState(() {
-                                                  createPet();
-                                                  uploading = true;
-                                                })
-                                              // ignore: unnecessary_statements
-                                              : null;
+                                          if (_imageFile != null) {
+                                            setState(() {
+                                              createPet();
+                                              uploading = true;
+                                            });
+                                          }
                                         }
                                       },
                                       minWidth: double.infinity,

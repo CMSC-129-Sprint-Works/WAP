@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:wap/addPost.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/bookmarkPage.dart';
 import 'package:wap/database.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/editprofile.dart';
+import 'package:wap/editprofile2.dart';
 import 'package:wap/messagepage.dart';
 import 'package:wap/petprofilepage.dart';
 import 'package:wap/settingsPage.dart';
@@ -27,6 +29,8 @@ class _ProfilePageState extends State<ProfilePage> {
   ScrollController controller = ScrollController();
   int tabSelectedIndex = 0;
   int navBarSelectedIndex = 2;
+  Stream messageStream;
+  Stream appRequestsStream;
 
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
@@ -35,10 +39,12 @@ class _ProfilePageState extends State<ProfilePage> {
   //----------------------------------------------------------------------------
 
   String accountType;
+  bool accountStatus = false;
   String userName = "WAP USER";
   String fullName = "WAP USER";
   String firstName = "WAP";
   String lastName = "USER";
+  String donationDetails = "The user has not set this yet.";
   String bio = " ";
   String address = "The user has not set this yet.";
   String contact = "The user has not set this yet.";
@@ -103,12 +109,30 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     accountType =
         await DatabaseService(uid: auth.currentUser.uid).getAccountType();
+    if (accountType == "institution") {
+      accountStatus =
+          await DatabaseService(uid: auth.currentUser.uid).getAccountStatus();
+      if (accountStatus == true) {
+        donationDetails = await DatabaseService(uid: auth.currentUser.uid)
+            .getDonationDetails();
+      }
+    }
+    var stream =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler();
+    var stream2 =
+        await DatabaseService(uid: auth.currentUser.uid).messageNotifHandler2();
+    var uName = await DatabaseService(uid: auth.currentUser.uid).getUsername();
+    setState(() {
+      messageStream = stream;
+      appRequestsStream = stream2;
+      userName = uName;
+    });
     fullName = await DatabaseService(uid: auth.currentUser.uid).getName();
     firstName = await DatabaseService(uid: auth.currentUser.uid).getFName();
     lastName = await DatabaseService(uid: auth.currentUser.uid).getLName();
     userName = await DatabaseService(uid: auth.currentUser.uid).getUsername();
     email = await DatabaseService(uid: auth.currentUser.uid).getEmail();
-    userName = await DatabaseService(uid: auth.currentUser.uid).getUsername();
+
     bio = await DatabaseService(uid: auth.currentUser.uid).getBio();
     nickname = await DatabaseService(uid: auth.currentUser.uid).getNickname();
     address = await DatabaseService(uid: auth.currentUser.uid).getAddress();
@@ -207,6 +231,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    navBarSelectedIndex = 2;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -216,7 +241,6 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             Text(
               "Profile",
-              key: Key('Profile1'),
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Montserrat',
@@ -310,15 +334,42 @@ class _ProfilePageState extends State<ProfilePage> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: <Widget>[
-                                                Text(
-                                                  fullName,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                    fontFamily: 'Montserrat',
-                                                  ),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      fullName,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15,
+                                                        fontFamily:
+                                                            'Montserrat',
+                                                      ),
+                                                    ),
+                                                    SizedBox(width: 5),
+                                                    accountType ==
+                                                                "institution" &&
+                                                            accountStatus ==
+                                                                true
+                                                        ? Padding(
+                                                            padding:
+                                                                EdgeInsets.all(
+                                                                    5),
+                                                            child: Container(
+                                                              child:
+                                                                  Image.asset(
+                                                                "assets/images/verified.png",
+                                                                height: 20,
+                                                                matchTextDirection:
+                                                                    true,
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                              ),
+                                                            ))
+                                                        : SizedBox(width: 1)
+                                                  ],
                                                 ),
                                                 Padding(
                                                   padding:
@@ -370,20 +421,34 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               Expanded(
                                   child: Padding(
-                                padding: EdgeInsets.only(left: 30, right: 20),
+                                padding: EdgeInsets.only(left: 50, right: 50),
                                 child: MaterialButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => EditProfile(
-                                                pic,
-                                                firstName,
-                                                lastName,
-                                                bio,
-                                                address,
-                                                nickname,
-                                                contact)));
+                                    accountType == "personal"
+                                        ? Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditProfile(
+                                                        pic,
+                                                        firstName,
+                                                        lastName,
+                                                        bio,
+                                                        address,
+                                                        nickname,
+                                                        contact)))
+                                        : Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    EditInstiProfile(
+                                                        accountStatus,
+                                                        pic,
+                                                        fullName,
+                                                        bio,
+                                                        address,
+                                                        nickname,
+                                                        contact)));
                                   },
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(40)),
@@ -391,7 +456,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                   child: Container(
                                     child: Text(
                                       'Edit Profile',
-                                      key: Key("editProfile"),
                                       style: TextStyle(
                                         fontSize: 15,
                                         fontFamily: 'Montserrat',
@@ -401,20 +465,6 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ),
                               )),
-                              Container(
-                                  padding: EdgeInsets.only(right: 30),
-                                  child: IconButton(
-                                      icon: Icon(
-                                        Icons.bookmark,
-                                        color: Colors.teal[50],
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    BookmarkPage()));
-                                      }))
                             ])
                       ],
                     )),
@@ -551,8 +601,132 @@ class _ProfilePageState extends State<ProfilePage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
             label: 'Messages',
+            icon: Stack(children: [
+              Icon(Icons.chat_bubble),
+              StreamBuilder(
+                  stream: messageStream,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      List<DocumentSnapshot> dsList = snapshot.data.docs;
+                      int count = 0;
+
+                      return StreamBuilder(
+                          stream: appRequestsStream,
+                          builder: (context2, snapshot2) {
+                            if (snapshot2.hasData) {
+                              List<DocumentSnapshot> dsList2 =
+                                  snapshot2.data.docs;
+
+                              if (dsList2.length > 0) {
+                                dsList2.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          userName &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          userName &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              }
+                            } else {
+                              if (dsList.length > 0) {
+                                dsList.forEach((element) {
+                                  if (element["lastMessageSentby"] !=
+                                          userName &&
+                                      element["lastMessageSeen"] == false) {
+                                    count = count + 1;
+                                  }
+                                });
+                                if (count > 0) {
+                                  return Positioned(
+                                    right: 0,
+                                    child: new Container(
+                                      child: Text(
+                                        count < 9 ? count.toString() : "9+",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color: Colors.white, fontSize: 10),
+                                      ),
+                                      padding: EdgeInsets.all(1),
+                                      decoration: new BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      constraints: BoxConstraints(
+                                        minWidth: 12,
+                                        minHeight: 12,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return SizedBox();
+                                }
+                              } else {
+                                return SizedBox();
+                              }
+                            }
+                          });
+                    } else {
+                      return SizedBox();
+                    }
+                  }),
+            ]),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -617,42 +791,93 @@ class _ProfilePageState extends State<ProfilePage> {
                           color: Colors.teal[50])),
                 ),
                 SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Container(
-                          height: 60,
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle, color: Colors.teal),
-                          child: Icon(Icons.person_outline_rounded,
-                              color: Colors.white)),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15),
-                        child: Text(
-                          "Nickname",
-                          key: Key("nickname"),
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                //Get nickname of user
-                Text(
-                  nickname,
-                  style: TextStyle(fontFamily: 'Montserrat'),
-                ),
-                SizedBox(height: 10),
-                Divider(color: Colors.teal),
+                //Display user's nickname if account type is personal
+                accountType == "personal"
+                    ? Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: Container(
+                                    height: 60,
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.teal),
+                                    child: Icon(Icons.person_outline_rounded,
+                                        color: Colors.white)),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 15),
+                                  child: Text(
+                                    "Nickname",
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          //Get nickname of user
+                          Text(
+                            nickname,
+                            style: TextStyle(fontFamily: 'Montserrat'),
+                          ),
+                          SizedBox(height: 10),
+                          Divider(color: Colors.teal),
+                        ],
+                      )
+                    //Display donation details for verified institution
+                    : accountType == "institution" && accountStatus == true
+                        ? Container(
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10),
+                                      child: Container(
+                                          height: 60,
+                                          padding: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.teal),
+                                          child: Icon(Icons.pets_outlined,
+                                              color: Colors.white)),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 15),
+                                        child: Text(
+                                          "Donation Details",
+                                          style: TextStyle(
+                                              fontFamily: 'Montserrat',
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                //Get donation details of user
+                                Text(
+                                  donationDetails,
+                                  style: TextStyle(fontFamily: 'Montserrat'),
+                                ),
+                                SizedBox(height: 10),
+                                Divider(color: Colors.teal),
+                              ],
+                            ),
+                          )
+                        : SizedBox(height: 0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,7 +897,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
                           "Address",
-                          key: Key("address"),
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
@@ -700,15 +924,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           padding: EdgeInsets.all(5),
                           decoration: BoxDecoration(
                               shape: BoxShape.circle, color: Colors.teal),
-                          child: Icon(Icons.mail_outline_rounded,
-                              color: Colors.white)),
+                          child:
+                              Icon(Icons.phone_outlined, color: Colors.white)),
                     ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 15),
                         child: Text(
-                          "Contact Details",
-                          key: Key("contact"),
+                          "Contact Number",
                           style: TextStyle(
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.bold,
@@ -743,7 +966,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       padding: const EdgeInsets.only(top: 15),
                       child: Text(
                         "Email Address",
-                        key: Key("emailAddProfilePage"),
                         style: TextStyle(
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.bold,
@@ -982,7 +1204,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ));
                         },
                       ))
-                  : SizedBox(height: 5),
+                  : Padding(
+                      padding:
+                          const EdgeInsets.only(left: 50, right: 50, top: 100),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text("No Pet List to Show",
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 25)),
+                        ],
+                      ),
+                    ),
         ],
       ),
     );

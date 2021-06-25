@@ -32,7 +32,7 @@ void main() {
       await tester.tap(nextButton1);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
-      expect(find.byKey(Key('clickNext')), findsOneWidget);
+      expect(find.byKey(Key('clickNext1')), findsOneWidget);
 
       //clicking skip Button
       final Finder skipButton1 = find.byKey(Key('clickSkip1'));

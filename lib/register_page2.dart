@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:wap/database.dart';
 import 'package:wap/setUpProfile2.dart';
@@ -19,6 +21,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
   bool accepted = false;
   bool usernameTaken = false;
   bool emailTaken = false;
+  bool registering = false;
   String pssword;
   String errorMsg;
   final _key = GlobalKey<FormState>();
@@ -52,6 +55,10 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
             _newusernameController.text,
             _newemailController.text,
             _newinstinameController.text);
+        SharedPreferences shared = await SharedPreferences.getInstance();
+        shared.setString("id", user.uid);
+        shared.setString("insti name", _newinstinameController.text);
+        shared.setString("username", _newusernameController.text);
         Navigator.pop(context);
         Navigator.pop(context);
         Navigator.pushReplacement(
@@ -147,30 +154,51 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
             SizedBox(height: 20),
             readTC(),
             SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 100),
-              child: Container(
-                padding: EdgeInsets.only(top: 3, left: 3),
-                child: MaterialButton(
-                  minWidth: double.infinity,
-                  height: 50,
-                  onPressed: () async {
-                    if (_key.currentState.validate()) {
-                      await _registerUser();
-                    }
-                  },
-                  color: Colors.teal[100],
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50)),
-                  child: Text("Register",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18,
-                          fontFamily: 'Montserrat')),
-                ),
-              ),
-            ),
+            registering
+                ? Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 150),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 3, left: 3),
+                      child: MaterialButton(
+                          minWidth: double.infinity,
+                          height: 50,
+                          onPressed: () {},
+                          color: Colors.teal[100],
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50)),
+                          child: SpinKitThreeBounce(
+                              color: Colors.white, size: 20)),
+                    ),
+                  )
+                : Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 100),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 3, left: 3),
+                      child: MaterialButton(
+                        minWidth: double.infinity,
+                        height: 50,
+                        onPressed: () async {
+                          if (_key.currentState.validate()) {
+                            await _registerUser();
+                            await _registerUser();
+                            setState(() {
+                              registering = true;
+                            });
+                          }
+                        },
+                        color: Colors.teal[100],
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50)),
+                        child: Text("Register",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                fontFamily: 'Montserrat')),
+                      ),
+                    ),
+                  ),
           ]),
         ),
       ),
@@ -188,7 +216,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
               child: Column(children: <Widget>[
                 TextFormField(
                   //INSTITUTION NAME
-                  key: Key("institutionName"),
+                  key: Key("institutionName1"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Name of Institution is required";
@@ -218,7 +246,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //USERNAME
-                  key: Key("username"),
+                  key: Key("userName2"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Username is required";
@@ -251,7 +279,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //EMAIL
-                  key: Key("emailAdd"),
+                  key: Key("emailAdd2"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Email is required";
@@ -283,7 +311,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //PASSWORD
-                  key: Key("password"),
+                  key: Key("password2"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -316,7 +344,7 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
                 SizedBox(height: 10),
                 TextFormField(
                   //CONFIRM PASSWORD
-                  key: Key("conPassword"),
+                  key: Key("conPassword2"),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "Password is required";
@@ -358,9 +386,8 @@ class _RegisterPageState extends State<InstitutionRegisterPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Text('By clicking Register, you accept the ',
-            style: TextStyle(fontFamily: 'Montserrat')),
+            key: Key('TC2'), style: TextStyle(fontFamily: 'Montserrat')),
         TextButton(
-            key: Key("Terms"),
             onPressed: () {
               //TermsAndConditions();
               createTC(context);

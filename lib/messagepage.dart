@@ -28,6 +28,9 @@ class _MessagePageState extends State<MessagePage> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   Stream directMessageStream;
   Stream applicationRequestStream;
+  String accountType;
+  bool accountStatus = false;
+  Stream updateStream;
 
   initState() {
     if (!mounted) {
@@ -51,6 +54,10 @@ class _MessagePageState extends State<MessagePage> {
     final dbGet = DatabaseService(uid: auth.currentUser.uid);
     un = await dbGet.getUsername();
     thisname = await dbGet.getName();
+    accountType = await dbGet.getAccountType();
+    if (accountType == "institution") {
+      accountStatus = await dbGet.getAccountStatus();
+    }
     pic = await DatabaseService(uid: auth.currentUser.uid).getPicture();
   }
 
@@ -107,6 +114,7 @@ class _MessagePageState extends State<MessagePage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
+    _selectedIndex = 3;
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -176,14 +184,34 @@ class _MessagePageState extends State<MessagePage> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: <Widget>[
-                                          Text(
-                                            thisname,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                              fontFamily: 'Montserrat',
-                                            ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                thisname,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                  fontFamily: 'Montserrat',
+                                                ),
+                                              ),
+                                              SizedBox(width: 5),
+                                              accountType == "institution" &&
+                                                      accountStatus == true
+                                                  ? Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      child: Container(
+                                                        child: Image.asset(
+                                                          "assets/images/verified.png",
+                                                          height: 20,
+                                                          matchTextDirection:
+                                                              true,
+                                                          fit: BoxFit.fill,
+                                                        ),
+                                                      ))
+                                                  : SizedBox(width: 1)
+                                            ],
                                           ),
                                           Padding(
                                             padding:
@@ -330,8 +358,30 @@ class _MessagePageState extends State<MessagePage> {
             label: 'Profile',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
             label: 'Messages',
+            icon: Stack(children: [
+              Icon(Icons.chat_bubble),
+              StreamBuilder(
+                  stream: updateStream,
+                  builder: (context, snapshot) {
+                    return snapshot.hasData
+                        ? Positioned(
+                            right: 0,
+                            child: new Container(
+                              padding: EdgeInsets.all(1),
+                              decoration: new BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 12,
+                                minHeight: 12,
+                              ),
+                            ),
+                          )
+                        : SizedBox(height: 0.1);
+                  })
+            ]),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
@@ -406,7 +456,13 @@ class _MessagePageState extends State<MessagePage> {
                                 },
                                 longPress: () {});
                           }))
-                  : Center(child: CircularProgressIndicator());
+                  : Container(
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.only(top: 50),
+                      child: CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.teal[900])));
             },
           ),
         ],
@@ -422,7 +478,7 @@ class _MessagePageState extends State<MessagePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.only(left: 70, right: 70),
+            padding: const EdgeInsets.only(left: 50, right: 50),
             decoration: BoxDecoration(
                 shape: BoxShape.rectangle,
                 color: Colors.teal,
@@ -477,7 +533,13 @@ class _MessagePageState extends State<MessagePage> {
                                 longPress: () {});
                           }))
                   : snapshot != null
-                      ? Center(child: CircularProgressIndicator())
+                      ? Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.only(top: 50),
+                          child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.teal[900])))
                       : Container(child: Text("No Messages"));
             },
           ),
@@ -581,6 +643,8 @@ class ChatCard extends StatelessWidget {
   Future<UserDetails> getPhoto() async {
     String uid = await DatabaseService().getUserID(chat.name.toString());
     return UserDetails(
+        accountType: await DatabaseService(uid: uid).getAccountType(),
+        accountStatus: await DatabaseService(uid: uid).getAccountStatus(),
         fullName: await DatabaseService(uid: uid).getName(),
         image: await DatabaseService(uid: uid).getPicture());
   }
@@ -613,21 +677,77 @@ class ChatCard extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(children: [
-                                  Flexible(
-                                      child: Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(snapshot.data.fullName,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            color: chat.sentByMe
-                                                ? Colors.black
-                                                : !chat.seen
-                                                    ? Colors.teal
-                                                    : Colors.black,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            fontFamily: 'Montserrat')),
-                                  )),
+                                  snapshot.data.accountType == "personal"
+                                      ? Flexible(
+                                          child: Container(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(snapshot.data.fullName,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  color: chat.sentByMe
+                                                      ? Colors.black
+                                                      : !chat.seen
+                                                          ? Colors.teal
+                                                          : Colors.black,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontFamily: 'Montserrat')),
+                                        ))
+                                      : Flexible(
+                                          child: Container(
+                                          alignment: Alignment.centerLeft,
+                                          child: Row(
+                                            children: [
+                                              Text(snapshot.data.fullName,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                      color: chat.sentByMe
+                                                          ? Colors.black
+                                                          : !chat.seen
+                                                              ? Colors.teal
+                                                              : Colors.black,
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontFamily:
+                                                          'Montserrat')),
+                                              SizedBox(width: 2),
+                                              snapshot.data.accountType ==
+                                                          "institution" &&
+                                                      snapshot.data
+                                                              .accountStatus ==
+                                                          true
+                                                  ? Padding(
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                      child: Container(
+                                                        child: Image.asset(
+                                                          "assets/images/verified.png",
+                                                          height: 15,
+                                                          matchTextDirection:
+                                                              true,
+                                                          fit: BoxFit.fill,
+                                                        ),
+                                                      ))
+                                                  : SizedBox(width: 1),
+                                            ],
+                                          ),
+                                        )),
+                                  /*SizedBox(width: 2),
+                                  snapshot.data.accountType == "institution" &&
+                                          snapshot.data.accountStatus == true
+                                      ? Padding(
+                                          padding: EdgeInsets.all(5),
+                                          child: Container(
+                                            child: Image.asset(
+                                              "assets/images/verified.png",
+                                              height: 15,
+                                              matchTextDirection: true,
+                                              fit: BoxFit.fill,
+                                            ),
+                                          ))
+                                      : SizedBox(width: 1),*/
                                   Container(
                                     alignment: Alignment.centerRight,
                                     child: Opacity(

@@ -24,15 +24,18 @@ class _BookmarkPageState extends State<BookmarkPage> {
   }
 
   getUserBookmarks() async {
-    final dbGet = DatabaseService(uid: auth.currentUser.uid);
-    dbGet.getBookmarks().then((value) {
+    await DatabaseService(uid: auth.currentUser.uid)
+        .getBookmarks()
+        .then((value) {
       setState(() {
-        pets.addAll(value);
+        value != null ? pets.addAll(value) : pets = [];
         pets.isNotEmpty
             ? _isChecked = List<bool>.filled(pets.length, false, growable: true)
             : _isChecked = [];
-        isLoading = false;
       });
+    });
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -48,16 +51,23 @@ class _BookmarkPageState extends State<BookmarkPage> {
     var size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.teal[100],
+        //backgroundColor: Colors.teal[100],
         centerTitle: true,
         automaticallyImplyLeading: true,
         elevation: 1,
         title: Text(
           "Bookmarks",
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: isLoading
@@ -152,14 +162,12 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                                   _isChecked[index] = value;
                                                 });
                                               }),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                                shape: BoxShape.circle),
-                                            child: Image(
-                                              image: MemoryImage(
-                                                  pets[index].petPic),
-                                              height: double.infinity,
-                                            ),
+                                          CircleAvatar(
+                                            backgroundColor: Colors.teal,
+                                            radius: size.height * 0.05,
+                                            backgroundImage: MemoryImage(
+                                                pets[index]
+                                                    .petPic), //GET FROM DB
                                           ),
                                           Expanded(
                                               child: Padding(

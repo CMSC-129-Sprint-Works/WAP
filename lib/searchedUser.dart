@@ -28,7 +28,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   ScrollController controller = ScrollController();
   int tabSelectedIndex = 0;
-  int navBarSelectedIndex = 2;
 
   //----------------------------------------------------------------------------
   //----------------------------------------------------------------------------
@@ -38,11 +37,13 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
 
   bool following = false;
   String accountType;
+  bool accountStatus;
   String userName = "WAP USER";
   String fullName = "WAP USER";
   String firstName = "WAP";
   String lastName = "USER";
   String bio = " ";
+  String donationDetails = "The user has not set this yet.";
   String address = "The user has not set this yet.";
   String contact = "The user has not set this yet.";
   String nickname = "The user has not set this yet.";
@@ -124,6 +125,13 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
       return;
     }
     accountType = await DatabaseService(uid: widget.userID).getAccountType();
+    if (accountType == "institution") {
+      accountStatus =
+          await DatabaseService(uid: widget.userID).getAccountStatus();
+      if (accountStatus == true)
+        donationDetails =
+            await DatabaseService(uid: widget.userID).getDonationDetails();
+    }
     fullName = await DatabaseService(uid: widget.userID).getName();
     firstName = await DatabaseService(uid: widget.userID).getFName();
     lastName = await DatabaseService(uid: widget.userID).getLName();
@@ -195,44 +203,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         .addLikeToPost(postID);
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      navBarSelectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
-        }
-        break;
-      case 1:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SearchPage()));
-        }
-        break;
-      case 2:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => ProfilePage()));
-        }
-        break;
-      case 3:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => MessagePage()));
-        }
-        break;
-      case 4:
-        {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => SettingsPage()));
-        }
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -243,7 +213,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
         automaticallyImplyLeading: true,
         elevation: 0,
         title: Text(
-          firstName + "'s Profile",
+          accountType == "personal"
+              ? firstName + "'s Profile"
+              : fullName + "'s Profile",
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Montserrat',
@@ -320,14 +292,36 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: <Widget>[
-                                              Text(
-                                                fullName,
-                                                overflow: TextOverflow.clip,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 15,
-                                                  fontFamily: 'Montserrat',
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                    fullName,
+                                                    overflow: TextOverflow.clip,
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 15,
+                                                      fontFamily: 'Montserrat',
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 5),
+                                                  accountType ==
+                                                              "institution" &&
+                                                          accountStatus == true
+                                                      ? Padding(
+                                                          padding:
+                                                              EdgeInsets.all(5),
+                                                          child: Container(
+                                                            child: Image.asset(
+                                                              "assets/images/verified.png",
+                                                              height: 20,
+                                                              matchTextDirection:
+                                                                  true,
+                                                              fit: BoxFit.fill,
+                                                            ),
+                                                          ))
+                                                      : SizedBox(width: 1)
+                                                ],
                                               ),
                                               Padding(
                                                 padding: const EdgeInsets.only(
@@ -375,8 +369,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(28, 0, 0, 0),
+                            padding: const EdgeInsets.only(left: 35, right: 5),
                             child: MaterialButton(
+                              minWidth: size.width * 0.4,
                               onPressed: () async {
                                 setState(() {
                                   following = !following;
@@ -387,16 +382,19 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                                 final snackBar = SnackBar(
                                   backgroundColor: Colors.teal,
                                   content: !following
-                                      ? Text(
-                                          "Oh no! You unfollowed " + firstName)
-                                      : Text(
-                                          "Yay! You're following " + firstName),
+                                      ? Text(accountType == "personal"
+                                          ? "Oh no! You unfollowed " + firstName
+                                          : "Oh no! You unfollowed " + fullName)
+                                      : Text(accountType == "personal"
+                                          ? "Yay! You're following " + firstName
+                                          : "Yay! You're following " +
+                                              fullName),
                                 );
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(snackBar);
                               },
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)),
+                                  borderRadius: BorderRadius.circular(40)),
                               color: Colors.teal[50],
                               child: Center(
                                 child: Text(
@@ -411,8 +409,9 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            padding: const EdgeInsets.only(left: 5, right: 30),
                             child: MaterialButton(
+                              minWidth: size.width * 0.4,
                               onPressed: () {
                                 dynamic chatroomID =
                                     getChatRoomID(myUserName, username1);
@@ -429,7 +428,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                                             MessageConvo(widget.userID)));
                               },
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)),
+                                  borderRadius: BorderRadius.circular(40)),
                               color: Colors.teal[50],
                               child: Center(
                                 child: Text(
@@ -550,7 +549,7 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                             ? getPosts(size)
                             : Padding(
                                 padding: const EdgeInsets.only(
-                                    left: 60, right: 50, top: 200),
+                                    left: 65, right: 50, top: 200),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
@@ -566,37 +565,6 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                 ),
               ],
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
-            label: 'Messages',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        type: BottomNavigationBarType.fixed,
-        currentIndex: navBarSelectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.teal,
-        showUnselectedLabels: true,
-      ),
     );
   }
 
@@ -647,41 +615,93 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                           color: Colors.teal[50])),
                 ),
                 SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 10),
-                      child: Container(
-                          height: 60,
-                          padding: EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle, color: Colors.teal),
-                          child: Icon(Icons.person_outline_rounded,
-                              color: Colors.white)),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 15),
-                        child: Text(
-                          "Nickname",
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                //Get nickname of user
-                Text(
-                  nickname,
-                  style: TextStyle(fontFamily: 'Montserrat'),
-                ),
-                SizedBox(height: 10),
-                Divider(color: Colors.teal),
+                //Display user's nickname if account type is personal
+                accountType == "personal"
+                    ? Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 10),
+                                child: Container(
+                                    height: 60,
+                                    padding: EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.teal),
+                                    child: Icon(Icons.person_outline_rounded,
+                                        color: Colors.white)),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 15),
+                                  child: Text(
+                                    "Nickname",
+                                    style: TextStyle(
+                                        fontFamily: 'Montserrat',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          //Get nickname of user
+                          Text(
+                            nickname,
+                            style: TextStyle(fontFamily: 'Montserrat'),
+                          ),
+                          SizedBox(height: 10),
+                          Divider(color: Colors.teal),
+                        ],
+                      )
+                    //Display donation details for verified institution
+                    : accountType == "institution" && accountStatus == true
+                        ? Container(
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 10),
+                                      child: Container(
+                                          height: 60,
+                                          padding: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.teal),
+                                          child: Icon(Icons.pets_outlined,
+                                              color: Colors.white)),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 15),
+                                        child: Text(
+                                          "Donation Details",
+                                          style: TextStyle(
+                                              fontFamily: 'Montserrat',
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                //Get donation details of user
+                                Text(
+                                  donationDetails,
+                                  style: TextStyle(fontFamily: 'Montserrat'),
+                                ),
+                                SizedBox(height: 10),
+                                Divider(color: Colors.teal),
+                              ],
+                            ),
+                          )
+                        : SizedBox(height: 0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -806,7 +826,10 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                 shape: BoxShape.rectangle,
                 color: Colors.teal,
                 borderRadius: BorderRadius.circular(10)),
-            child: Text(firstName + "'s Pet List",
+            child: Text(
+                accountType == "personal"
+                    ? firstName + "'s Pet List"
+                    : fullName + "'s Pet List",
                 style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 20,
@@ -967,7 +990,18 @@ class _PublicProfilePageState extends State<PublicProfilePage> {
                                   ));
                         },
                       ))
-                  : Container(),
+                  : Padding(
+                      padding:
+                          const EdgeInsets.only(left: 50, right: 50, top: 100),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text("No Pet List to Show",
+                              style:
+                                  TextStyle(color: Colors.grey, fontSize: 25)),
+                        ],
+                      ),
+                    ),
         ],
       ),
     );

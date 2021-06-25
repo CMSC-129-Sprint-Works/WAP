@@ -119,17 +119,17 @@ class _WelcomeSliderPageState extends State<WelcomeSliderPage> {
       backgroundColorAllSlides: Colors.teal[400],
       renderSkipBtn: Text(
         "Skip",
-        key: Key("clickSkip1"),
+        key: Key('clickSkip1'),
       ),
       renderNextBtn: Text(
         "Next",
+        key: Key('clickNext1'),
         style: TextStyle(color: Colors.green[700]),
-        key: Key("clickNext1"),
       ),
       renderDoneBtn: Text(
         "Done",
+        key: Key('clickDone1'),
         style: TextStyle(color: Colors.green[700]),
-        key: Key("clickDone1"),
       ),
       colorDoneBtn: Colors.white,
       colorActiveDot: Colors.white,

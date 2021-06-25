@@ -57,7 +57,6 @@ class _RegisterAccountState extends State<RegisterAccount> {
                         child: MaterialButton(
                           minWidth: double.infinity,
                           height: 50,
-			  key: Key("Personal"),
                           onPressed: () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -68,6 +67,7 @@ class _RegisterAccountState extends State<RegisterAccount> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50)),
                           child: Text("Personal Account",
+                              key: Key('personalAccount'),
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 18,
@@ -81,7 +81,6 @@ class _RegisterAccountState extends State<RegisterAccount> {
                       child: Container(
                         padding: EdgeInsets.only(top: 3, left: 3),
                         child: MaterialButton(
-			  key: Key("Institution"),
                           minWidth: double.infinity,
                           height: 50,
                           onPressed: () => Navigator.push(
@@ -94,6 +93,7 @@ class _RegisterAccountState extends State<RegisterAccount> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(50)),
                           child: Text("Institutional Account",
+                              key: Key('institutionAccount'),
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 18,

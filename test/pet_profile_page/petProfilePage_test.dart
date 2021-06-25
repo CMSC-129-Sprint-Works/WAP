@@ -20,12 +20,15 @@ void main() {
       await tester.tap(petProfilePic);
       expect(petProfilePic, findsOneWidget);
 
-      expect(find.text('Hi! I am'), findsOneWidget); //finder sa text
+      //text finders
+      expect(find.text('Pet Profile'), findsOneWidget);
+      expect(find.text('Hi! I am'), findsOneWidget);
+      expect(find.text('Application Pending'), findsOneWidget);
 
       //for adopt button
       final Finder adoptButton = find.byKey(Key('adoptButton'));
       await tester.tap(adoptButton);
-      expect(adoptButton, findsOneWidget);
+      expect(find.text('Adopt'), findsOneWidget);
 
       //for save button
       final Finder saveButton = find.byKey(Key('saveButton'));
@@ -33,17 +36,17 @@ void main() {
       expect(saveButton, findsOneWidget);
 
       //for edit button
-      final Finder editButton = find.byKey(Key('edit'));
+      final Finder editButton = find.byKey(Key('editButton3'));
       await tester.tap(editButton);
       expect(editButton, findsOneWidget);
 
       //for aboutMe button
-      final Finder aboutMeButton = find.byKey(Key('aboutMe'));
+      final Finder aboutMeButton = find.byKey(Key('aboutMe2'));
       await tester.tap(aboutMeButton);
       expect(aboutMeButton, findsOneWidget);
 
       //for save in bookmarks button
-      final Finder saved = find.byKey(Key('savedInBookmarks'));
+      final Finder saved = find.byKey(Key('bookmarked'));
       await tester.tap(saved);
       expect(find.text('Done'),
           findsOneWidget); //naay Done nga word mugawas after clicking savedInBookmarks
@@ -71,7 +74,8 @@ void main() {
       expect(find.text(needs), findsOneWidget);
 
       final characteristics = 'none';
-      await tester.enterText(find.byKey(Key("char")), characteristics);
+      await tester.enterText(
+          find.byKey(Key("characteristics")), characteristics);
       expect(find.text(characteristics), findsOneWidget);
 
       //--------------------------------------------------------------------------

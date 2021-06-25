@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:wap/database.dart';
 import 'package:wap/profilepage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +24,6 @@ class EditProfile extends StatefulWidget {
 
 class _EditProfileState extends State<EditProfile> {
   TextEditingController _firstnameController = TextEditingController();
-
   TextEditingController _lastnameController = TextEditingController();
   TextEditingController _bioController = TextEditingController();
   TextEditingController _addressController = TextEditingController();
@@ -34,7 +34,7 @@ class _EditProfileState extends State<EditProfile> {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final picker = ImagePicker();
   var fileName = "Upload Profile Picture";
-  double _progress;
+  bool uploading = false;
 
   File _imageFile;
   PickedFile image;
@@ -64,25 +64,14 @@ class _EditProfileState extends State<EditProfile> {
     });
   }
 
-  updatePicture() async {
-    Reference storageReference =
-        FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
-    final UploadTask uploadTask = storageReference.putFile(_imageFile);
-    uploadTask.snapshotEvents.listen((event) {
-      setState(() {
-        _progress =
-            event.bytesTransferred.toDouble() / event.totalBytes.toDouble();
-      });
-    });
-    print(_progress);
-  }
-
   updateProfile(BuildContext context) async {
     final FirebaseAuth auth = FirebaseAuth.instance;
     User user = auth.currentUser;
 
     if (_imageFile != null) {
-      await updatePicture().then((value) async {
+      Reference storageReference =
+          FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
+      await storageReference.putFile(_imageFile).whenComplete(() async {
         await DatabaseService(uid: user.uid)
             .updateProfile1(
                 _firstnameController.text,
@@ -118,14 +107,21 @@ class _EditProfileState extends State<EditProfile> {
       //to edit profile pic, name, username, and bio
       appBar: AppBar(
         elevation: 1,
-        backgroundColor: Colors.teal[100],
         centerTitle: true,
         title: Text(
           'Edit Profile',
+          key: Key('editProfile1'),
           style: TextStyle(
-            color: Colors.teal[500],
+            color: Colors.white,
             fontFamily: 'Montserrat',
           ),
+        ),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  colors: [Colors.teal[100], Colors.teal],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight)),
         ),
       ),
       body: SingleChildScrollView(
@@ -199,6 +195,7 @@ class _EditProfileState extends State<EditProfile> {
                   Container(
                     padding: EdgeInsets.only(right: 190),
                     child: IconButton(
+                      key: Key('editPublicDetails1'),
                       icon: Icon(
                         Icons.edit,
                         color: Colors.teal,
@@ -255,6 +252,7 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "First: " + widget.firstName,
+                                  key: Key('firstNameEdit'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -269,6 +267,7 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "Last: " + widget.lastName,
+                                  key: Key('lastNameEdit'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -283,6 +282,7 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "Other Name: " + widget.nickname,
+                                  key: Key('otherNameEdit'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -324,6 +324,7 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "Address: " + widget.address,
+                                  key: Key('addressEdit'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -338,6 +339,7 @@ class _EditProfileState extends State<EditProfile> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   "Phone Number: " + widget.contactNum,
+                                  key: Key('contactEdit'),
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: Colors.black,
@@ -360,6 +362,7 @@ class _EditProfileState extends State<EditProfile> {
                                     margin: EdgeInsets.only(top: 15),
                                     child: Text(
                                       "Bio",
+                                      key: Key('bio'),
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.black,
@@ -383,32 +386,60 @@ class _EditProfileState extends State<EditProfile> {
                               ),
                             )),
                         SizedBox(height: 30),
-                        Column(
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 50),
-                              child: MaterialButton(
-                                onPressed: () {
-                                  updateProfile(context);
-                                },
-                                minWidth: double.infinity,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50)),
-                                color: Colors.teal[400],
-                                child: Center(
-                                  child: Text(
-                                    'Update',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontFamily: 'Montserrat',
-                                      color: Colors.white,
+                        !uploading
+                            ? Column(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 50),
+                                    child: MaterialButton(
+                                      onPressed: () async {
+                                        setState(() {
+                                          uploading = true;
+                                        });
+                                        await updateProfile(context);
+                                      },
+                                      minWidth: double.infinity,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                      color: Colors.teal[400],
+                                      child: Center(
+                                        child: Text(
+                                          'Update',
+                                          key: Key('updateButton'),
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontFamily: 'Montserrat',
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 50),
+                                    child: MaterialButton(
+                                      onPressed: () {},
+                                      minWidth: double.infinity,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(50)),
+                                      color: Colors.teal[400],
+                                      child: Center(
+                                          child: SpinKitThreeBounce(
+                                        color: Colors.white,
+                                        size: 20.0,
+                                      )),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -425,14 +456,20 @@ class _EditProfileState extends State<EditProfile> {
     return Scaffold(
         appBar: AppBar(
           elevation: 1,
-          backgroundColor: Colors.teal[100],
           centerTitle: true,
           title: Text(
             'Edit Public Details',
             style: TextStyle(
-              color: Colors.teal[500],
+              color: Colors.white,
               fontFamily: 'Montserrat',
             ),
+          ),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: [Colors.teal[100], Colors.teal],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight)),
           ),
         ),
         body: ListView(

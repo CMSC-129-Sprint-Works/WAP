@@ -38,8 +38,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
   updatePicture() async {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Profile Pictures/$fileName");
-    // ignore: unused_local_variable
-    final UploadTask uploadTask = storageReference.putFile(_imageFile);
+    await storageReference.putFile(_imageFile);
   }
 
   Future updateProfile(BuildContext context) async {
@@ -89,7 +88,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
         width: double.infinity,
         child: Column(children: <Widget>[
           Text(
-            'Set Up Profile',
+            'Setup Your Profile',
+            key: Key('Profile1'),
             style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'Fredoka One',
@@ -130,7 +130,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     MaterialPageRoute(builder: (context) => ProfilePage()));
               },
               child: Text("Skip",
-                  key: Key('clickSkip2'),
+                  key: Key('skipButton2'),
                   style: TextStyle(
                       color: Colors.white,
                       fontFamily: 'Montserrat',
@@ -150,8 +150,8 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
               key: _key,
               child: Column(children: <Widget>[
                 TextFormField(
-                  //Nickname
-                  key: Key('nickname1'),
+                  //NickNAME
+                  key: Key('nickName1'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "This field is required";
@@ -182,7 +182,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 ),
                 SizedBox(height: 10),
                 TextFormField(
-                  key: Key('Addrress1'),
+                  key: Key('address1'),
                   validator: (value) {
                     if (value.isEmpty) {
                       return "This field is required";
@@ -213,6 +213,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 ),
                 SizedBox(height: 10),
                 TextFormField(
+                  key: Key('contact1'),
                   validator: (value) {
                     return validateMobile(value);
                   },
@@ -240,7 +241,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                 Container(
                     width: MediaQuery.of(context).size.width,
                     child: TextFormField(
-                      key: Key('description'),
+                      key: Key('description1'),
                       maxLines: 2,
                       maxLength: 60,
                       validator: (value) {
@@ -276,6 +277,7 @@ class _SetupProfilePageState extends State<SetupProfilePage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       TextButton(
+                        key: Key('profilePic1'),
                         style: ButtonStyle(),
                         onPressed: () async {
                           await uploadImage(context);

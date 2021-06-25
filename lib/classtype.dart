@@ -1,6 +1,20 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
+class SearchedUser {
+  final String id;
+  final String name;
+  final String username;
+  final dynamic userpic;
+  final bool userStatus;
+  const SearchedUser(
+      {@required this.id,
+      @required this.name,
+      @required this.username,
+      @required this.userpic,
+      @required this.userStatus});
+}
+
 class Post {
   dynamic userPic;
   final String postID;
@@ -9,6 +23,7 @@ class Post {
   final String caption;
   final String date;
   final bool liked;
+  bool accountStatus;
   int likes;
 
   Post(
@@ -18,6 +33,7 @@ class Post {
       @required this.postPic,
       @required this.date,
       @required this.likes,
+      this.accountStatus,
       this.liked,
       this.caption});
 }
@@ -64,7 +80,10 @@ class Chat {
 class UserDetails {
   final String fullName;
   final dynamic image;
-  UserDetails({this.fullName, this.image});
+  final String accountType;
+  final bool accountStatus;
+  UserDetails(
+      {this.fullName, this.image, this.accountStatus, this.accountType});
 }
 
 enum ChatMessageType { text, audio, image, video }

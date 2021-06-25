@@ -68,7 +68,6 @@ class DatabaseService {
   }
 
   updateLastMessageSent2(dynamic chatroomID, Map lastMessageInfoMap) async {
-    print(chatroomID.toString());
     return await FirebaseFirestore.instance
         .collection("application requests")
         .doc(chatroomID.toString())
@@ -156,6 +155,36 @@ class DatabaseService {
     if (status == false) {
       await chatDoc.doc(messageId).delete();
     }
+  }
+
+  updateApplicationStatus(String chatRoomID, bool decision) async {
+    if (decision == true) {
+      return await FirebaseFirestore.instance
+          .collection("application requests")
+          .doc(chatRoomID)
+          .update({"application status": "Accepted"});
+    } else {
+      return await FirebaseFirestore.instance
+          .collection("application requests")
+          .doc(chatRoomID)
+          .update({"application status": "Denied"});
+    }
+  }
+
+  cancelApplication(String chatRoomID) async {
+    return await FirebaseFirestore.instance
+        .collection("application requests")
+        .doc(chatRoomID)
+        .update({"application status": "Cancelled"});
+  }
+
+  messageNotifHandler2() async {
+    String uname = await getUsername();
+    return FirebaseFirestore.instance
+        .collection("application requests")
+        .where('users', arrayContains: uname)
+        .orderBy('lastMessageSendTs', descending: true)
+        .snapshots();
   }
 
   //----------------------------------------------------------------------------
@@ -348,11 +377,13 @@ class DatabaseService {
     } catch (e) {}
   }
 
-  messageNotifHandler(String username) async {
-    final here = await FirebaseFirestore.instance
+  messageNotifHandler() async {
+    String uname = await getUsername();
+    return FirebaseFirestore.instance
         .collection("chatrooms")
-        .where('users', arrayContains: username)
-        .get();
+        .where('users', arrayContains: uname)
+        .orderBy('lastMessageSendTs', descending: true)
+        .snapshots();
   }
 
   //----------------------------------------------------------------------------
@@ -377,6 +408,34 @@ class DatabaseService {
     }
     if (nickname.isEmpty == false) {
       await ud.update({'nickname': nickname.toLowerCase()});
+    } else {
+      await ud.update({'nickname': "The user has not set this yet."});
+    }
+    if (address.isEmpty == false) {
+      await ud.update({'address': address});
+    } else {
+      await ud.update({'address': "The user has not set this yet."});
+    }
+    if (cNum.isEmpty == false) {
+      await ud.update({'contact number': cNum});
+    } else {
+      await ud.update({'contact number': "The user has not set this yet."});
+    }
+  }
+
+  Future updateProfile2(String name, String donationDetails, String address,
+      String cNum, String bio) async {
+    final ud = userslist.doc(uid);
+    if (name.isEmpty == false) {
+      await ud.update({'institution name': name.toLowerCase()});
+    }
+    if (bio.isEmpty == false) {
+      await ud.update({'bio': bio});
+    } else {
+      await ud.update({'bio': " "});
+    }
+    if (donationDetails.isEmpty == false) {
+      await ud.update({'donation details': donationDetails});
     } else {
       await ud.update({'nickname': "The user has not set this yet."});
     }
@@ -724,6 +783,8 @@ class DatabaseService {
     String date;
     int likes;
     bool liked;
+    bool verified;
+    String accType;
 
     final storageReference = FirebaseStorage.instance.ref();
 
@@ -742,6 +803,10 @@ class DatabaseService {
           date = e['date'];
           likes = e['likes'];
           uid = e['poster ID'];
+          accType = await getAccountType();
+          accType == "personal"
+              ? verified = false
+              : verified = await getAccountStatus();
           liked = await checkLiked(e.id);
           await getPicture().then((value) {
             if (value != null) {
@@ -750,10 +815,9 @@ class DatabaseService {
           });
           await getName().then((value) {
             name = value.toString();
-          }, onError: (msg) {
-            getName2().then((value) => name = value.toString());
           });
           post = new Post(
+            accountStatus: verified,
             postID: e.id,
             userPic: pic,
             userName: name,
@@ -797,6 +861,8 @@ class DatabaseService {
     String date;
     int likes;
     bool liked;
+    bool verified;
+    String accType;
 
     final storageReference = FirebaseStorage.instance.ref();
     List<dynamic> following = await getFollowing();
@@ -807,7 +873,7 @@ class DatabaseService {
             .collection('posts')
             .where('poster ID', whereIn: following)
             .orderBy('post number', descending: true)
-            .limit(2)
+            .limit(3)
             .get()
             .then((doc) async {
           await Future.forEach(doc.docs, (e) async {
@@ -819,6 +885,10 @@ class DatabaseService {
             date = e['date'];
             likes = e['likes'];
             uid = e['poster ID'];
+            accType = await getAccountType();
+            accType == "personal"
+                ? verified = false
+                : verified = await getAccountStatus();
             await getPicture().then((value) {
               if (value != null) {
                 pic = value;
@@ -826,10 +896,9 @@ class DatabaseService {
             });
             await getName().then((value) {
               name = value.toString();
-            }, onError: (msg) {
-              getName2().then((value) => name = value.toString());
             });
             post = new Post(
+                accountStatus: verified,
                 postID: e.id,
                 userPic: pic,
                 userName: name,
@@ -867,6 +936,10 @@ class DatabaseService {
           date = fetchedSnaps[i]['date'];
           likes = fetchedSnaps[i]['likes'];
           uid = fetchedSnaps[i]['poster ID'];
+          accType = await getAccountType();
+          accType == "personal"
+              ? verified = false
+              : verified = await getAccountStatus();
           await getPicture().then((value) {
             if (value != null) {
               pic = value;
@@ -874,10 +947,9 @@ class DatabaseService {
           });
           await getName().then((value) {
             name = value.toString();
-          }, onError: (msg) {
-            getName2().then((value) => name = value.toString());
           });
           post = new Post(
+              accountStatus: verified,
               postID: name2,
               userPic: pic,
               userName: name,
@@ -935,8 +1007,8 @@ class DatabaseService {
     await userslist.doc(uid).set({'postcount': count});
     await userpets.doc(uid).set({'postcount': count});
     return await userslist.doc(uid).set({
+      'accountStatus': false,
       'accType': "institution",
-      'verified': false,
       'username': username,
       'email': email,
       'institution name': iname.toLowerCase(),
@@ -954,6 +1026,14 @@ class DatabaseService {
       String nickname, String address, String cNum, String bio) async {
     return await userslist.doc(uid).update({
       'nickname': nickname.toLowerCase(),
+      'address': address.toLowerCase(),
+      'contact number': cNum,
+      'bio': bio,
+    });
+  }
+
+  Future updateUserInfo2(String address, String cNum, String bio) async {
+    return await userslist.doc(uid).update({
       'address': address.toLowerCase(),
       'contact number': cNum,
       'bio': bio,
@@ -994,6 +1074,16 @@ class DatabaseService {
     } catch (e) {
       print(e.toString());
       return null;
+    }
+  }
+
+  Future getAccountStatus() async {
+    try {
+      DocumentSnapshot un = await userslist.doc(uid).get();
+      return un.get("accountStatus");
+    } catch (e) {
+      print(e.toString());
+      return false;
     }
   }
 
@@ -1066,13 +1156,13 @@ class DatabaseService {
     }
   }
 
-  Future getName2() async {
+  Future getDonationDetails() async {
     try {
       DocumentSnapshot un = await userslist.doc(uid).get();
-      return ReCase(un.get("institution name")).titleCase;
+      return un.get("donation details");
     } catch (e) {
       print(e.toString());
-      return null;
+      return " ";
     }
   }
 
@@ -1099,7 +1189,7 @@ class DatabaseService {
   getAddress() async {
     try {
       DocumentSnapshot un = await userslist.doc(uid).get();
-      return un.get("address");
+      return ReCase(un.get("address")).titleCase;
     } catch (e) {
       print(e.toString());
       return "The user has not set this yet.";

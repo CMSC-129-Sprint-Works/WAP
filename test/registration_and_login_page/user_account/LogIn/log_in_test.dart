@@ -13,8 +13,12 @@ void main() {
       await tester.pumpWidget(MyApp());
       await tester.pumpAndSettle();
 
+      //TEXT FINDERS
       expect(find.text('Login to WAP APP'), findsOneWidget);
       expect(find.text('New to WAP App'), findsOneWidget);
+      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('New to WAP App?'), findsOneWidget);
+      expect(find.text('Create an Account'), findsOneWidget);
 
       //entering email add
       final emailAdd = 'amber@gmail.com';

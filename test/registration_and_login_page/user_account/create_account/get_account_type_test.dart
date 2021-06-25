@@ -14,13 +14,13 @@ void main() {
       await tester.pumpAndSettle();
 
       //get Account type personal/institutional
-      final Finder personalAccount = find.byKey(Key('Personal'));
+      final Finder personalAccount = find.byKey(Key('personalAccount'));
       await tester.tap(personalAccount);
-      expect(personalAccount, findsOneWidget);
+      expect(find.byKey(Key('forPersonal')), findsOneWidget);
 
-      final Finder institutionalAccount = find.byKey(Key('Institution'));
+      final Finder institutionalAccount = find.byKey(Key('institutionAccount'));
       await tester.tap(institutionalAccount);
-      expect(institutionalAccount, findsOneWidget);
+      expect(find.text('Name of Institution'), findsOneWidget);
     },
   );
 }
