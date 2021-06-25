@@ -909,6 +909,7 @@ class _ApplicationRequestState extends State<ApplicationRequest> {
                             SizedBox(height: 50),
                             Text(
                                 "Do you want to accept this adoption application? The pet profile will automatically be deleted after this.",
+                                key: Key('warningMessage3'),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             Row(
@@ -983,6 +984,7 @@ class _ApplicationRequestState extends State<ApplicationRequest> {
                             SizedBox(height: 50),
                             Text(
                                 "Do you want to deny this adoption application?",
+                                key: Key('warningMessage4'),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             Row(
@@ -1056,6 +1058,7 @@ class _ApplicationRequestState extends State<ApplicationRequest> {
                             SizedBox(height: 50),
                             Text(
                                 "Do you want to cancel this adoption application?",
+                                key: Key('cancelWarning'),
                                 style: TextStyle(fontFamily: 'Montserrat')),
                             SizedBox(height: 20),
                             Row(

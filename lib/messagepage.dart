@@ -122,6 +122,7 @@ class _MessagePageState extends State<MessagePage> {
         elevation: 0,
         title: Text(
           "Message",
+          key: Key('Messagepage'),
           style: TextStyle(color: Colors.white, fontFamily: 'Montserrat'),
         ),
         flexibleSpace: Container(
@@ -274,12 +275,14 @@ class _MessagePageState extends State<MessagePage> {
                                     child: Column(
                                       children: [
                                         Text("Direct",
+                                            key: Key('forDirect'),
                                             style: TextStyle(
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 15,
                                                 color: Colors.black)),
                                         SizedBox(width: 5),
                                         Text("Messages",
+                                            key: Key('messages1'),
                                             style: TextStyle(
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 15,
@@ -310,12 +313,14 @@ class _MessagePageState extends State<MessagePage> {
                                     child: Column(
                                       children: [
                                         Text("Application",
+                                            key: Key('application'),
                                             style: TextStyle(
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 15,
                                                 color: Colors.black)),
                                         SizedBox(width: 5),
                                         Text("Requests",
+                                            key: Key('application1'),
                                             style: TextStyle(
                                                 fontFamily: 'Montserrat',
                                                 fontSize: 15,
@@ -413,6 +418,7 @@ class _MessagePageState extends State<MessagePage> {
                 color: Colors.teal,
                 borderRadius: BorderRadius.circular(10)),
             child: Text("Private Messages",
+                key: Key('private messages'),
                 style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 20,
@@ -483,7 +489,7 @@ class _MessagePageState extends State<MessagePage> {
                 shape: BoxShape.rectangle,
                 color: Colors.teal,
                 borderRadius: BorderRadius.circular(10)),
-            child: Text("Application Messages",
+            child: Text(" ",
                 style: TextStyle(
                     fontFamily: 'Montserrat',
                     fontSize: 20,
@@ -586,6 +592,7 @@ class _MessagePageState extends State<MessagePage> {
                                         borderRadius:
                                             BorderRadius.circular(100)),
                                     child: Text("Delete",
+                                        key: Key('deleteWarning'),
                                         style: TextStyle(
                                             fontFamily: 'Montserrat')),
                                     onPressed: () {

@@ -57,6 +57,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
         elevation: 1,
         title: Text(
           "Bookmarks",
+          key: Key('bookmarkPage2'),
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Montserrat',
@@ -96,6 +97,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                               });
                             },
                             child: Text("Select All",
+                                key: Key('selectAll'),
                                 style: TextStyle(
                                     color: Colors.teal,
                                     fontFamily: 'Montserrat',
@@ -312,6 +314,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                         borderRadius:
                                             BorderRadius.circular(100)),
                                     child: Text("Delete",
+                                        key: Key('deleteWarning3'),
                                         style: TextStyle(
                                             fontFamily: 'Montserrat')),
                                     onPressed: () {

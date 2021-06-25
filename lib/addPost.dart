@@ -92,7 +92,7 @@ class _AddPostPageState extends State<AddPostPage> {
     if (_imageFile != null) {
       String uniqueID = _imageFile.path.split('/').last;
       uniqueID = uniqueID.substring(0, uniqueID.indexOf('.'));
-      Reference storageReference =
+      var storageReference =
           FirebaseStorage.instance.ref().child("User Posts/$uniqueID");
       uploadTask = storageReference.putFile(_imageFile).whenComplete(() => {
             dbGet.addPost(_captionController.text, uniqueID),
@@ -111,6 +111,7 @@ class _AddPostPageState extends State<AddPostPage> {
         elevation: 1,
         title: Text(
           "Add Post",
+          key: Key('addPost'),
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Montserrat',
@@ -250,6 +251,7 @@ class _AddPostPageState extends State<AddPostPage> {
                             child: Center(
                               child: Text(
                                 'Upload Post',
+                                key: Key('uploadPost'),
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontFamily: 'Montserrat',
@@ -297,6 +299,7 @@ class _AddPostPageState extends State<AddPostPage> {
                 child: Column(children: <Widget>[
                   SizedBox(height: 10),
                   TextFormField(
+                    key: Key('caption'),
                     maxLength: 60,
                     maxLengthEnforcement: MaxLengthEnforcement.enforced,
                     autofocus: true,

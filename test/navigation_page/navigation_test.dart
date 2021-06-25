@@ -32,7 +32,7 @@ void main() {
       await tester.pump();
       // Expect to find the item on screen.
       expect(find.text('Search'),
-          findsOneWidget); //makita ni niya sa screen nga text after ma tap
+          findsWidgets); //makita ni niya sa screen nga text after ma tap
 
       //going to ProfilePage
       Finder goToProfilePage = find.bySemanticsLabel('Profile');
@@ -41,7 +41,7 @@ void main() {
       await tester.pump();
       // Expect to find the item on screen.
       expect(find.text('Profile'),
-          findsOneWidget); //makita ni niya sa screen nga text after ma tap
+          findsWidgets); //makita ni niya sa screen nga text after ma tap
 
       //going to settingsPage
       Finder goToMessagesPage = find.bySemanticsLabel('Messages');

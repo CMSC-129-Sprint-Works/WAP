@@ -2,12 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:wap/database.dart';
 import 'package:wap/message_convo.dart';
+// ignore: unused_import
 import 'package:wap/messagepage.dart';
 import 'package:wap/petprofilepage.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
 import 'package:wap/settingsPage.dart';
+// ignore: unused_import
 import 'package:wap/home_page.dart';
+// ignore: unused_import
 import 'package:wap/profilepage.dart';
+// ignore: unused_import
 import 'package:wap/searchPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

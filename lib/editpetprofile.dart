@@ -64,6 +64,7 @@ class _EditPetProfilePageState extends State<EditPetProfilePage> {
   updatePicture() async {
     Reference storageReference =
         FirebaseStorage.instance.ref().child("Pet Profile Pictures/$fileName");
+    // ignore: unused_local_variable
     final UploadTask uploadTask = storageReference.putFile(_imageFile);
   }
 

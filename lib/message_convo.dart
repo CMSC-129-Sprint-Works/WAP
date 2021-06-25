@@ -40,6 +40,7 @@ class _MessageConvoState extends State<MessageConvo> {
   String myUserName, username1;
   Stream messageStream;
   bool showSticker = false;
+
   String accountType;
   bool accountStatus;
 
@@ -826,6 +827,7 @@ class _MessageConvoState extends State<MessageConvo> {
                                         borderRadius:
                                             BorderRadius.circular(100)),
                                     child: Text("Delete",
+                                        key: Key('deleteWarning1'),
                                         style: TextStyle(
                                             fontFamily: 'Montserrat')),
                                     onPressed: () {

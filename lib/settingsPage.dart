@@ -18,9 +18,11 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   final auth = FirebaseAuth.instance;
+  // ignore: unused_field
   TextEditingController _userNameController = TextEditingController();
   TextEditingController _newPasswordController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+  // ignore: unused_field
   final _key1 = GlobalKey<FormState>();
   final _key2 = GlobalKey<FormState>();
   final _key3 = GlobalKey<FormState>();

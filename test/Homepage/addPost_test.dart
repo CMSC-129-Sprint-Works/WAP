@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter/widgets.dart';
 import 'package:wap/main.dart';
+import 'package:wap/addPost.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -14,12 +15,28 @@ void main() {
     (tester) async {
       await tester.pumpWidget(MyApp());
 
-      //going to AddPostPage
-      final Finder goToAddPostPage = find.byKey(Key('goToAddPostPage'));
-      // Tap the add button.
-      await tester.tap(goToAddPostPage);
-      // Rebuild the widget after the state has changed.
-      await tester.pump();
+      //text finders
+      final Finder addPost = find.byKey(Key('addPost'));
+      expect(addPost, findsOneWidget);
+
+      final Finder uploadPost = find.byKey(Key('uploadPost'));
+      expect(uploadPost, findsOneWidget);
+
+      //finder for icons and check if it works
+      final Finder photoIcon = find.byIcon(Icons.photo);
+      await tester.tap(photoIcon);
+      expect(photoIcon, findsNothing);
+
+      final Finder cameraIcon = find.byIcon(Icons.camera_alt);
+      await tester.tap(cameraIcon);
+      expect(cameraIcon, findsNothing);
+
+      final Finder tagFacesIcon = find.byIcon(Icons.tag_faces);
+      await tester.tap(tagFacesIcon);
+      expect(tagFacesIcon, findsNothing);
+
+      final Finder caption = find.byKey(Key('caption'));
+      expect(caption, findsOneWidget);
     },
   );
 }
