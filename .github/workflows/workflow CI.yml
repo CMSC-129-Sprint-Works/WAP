@@ -11,11 +11,7 @@ jobs:
    unit-test: 
     name: Unit tests
     # We want to run this Job on an Ubuntu VM 
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      matrix:
-        os: [ubuntu-18.04, windows-2019, macgos-10.15]
-   
+    runs-on: ubuntu-latest
     steps:
      
       # Checkout the repository code using V1 of the standard checkout Action
@@ -27,20 +23,33 @@ jobs:
           # we want the latest Java 12
           java-version: '12.x'
          
-      - name: Set up Flutter 
+     
         # Use the community Action to install Flutter
       - uses: subosito/flutter-action@v1
         with:
           # we want the stable channel
-          channel: 'stable'  
+          channel: 'dev'  
   
         # Get flutter packages
       - run: flutter pub get
        # Analyze our Dart code
-     # - run: flutter analyze
-      # Run our tests
-      - name: Run Flutter tests
+  # Check for any formatting issues in the code.
+   # - run: flutter format --set-exit-if-changed .
+    
+    # Statically analyze the Dart code for any errors.
+   # - run: flutter analyze .
+    
+    # Run widget tests for our flutter project.
       - run: flutter test
+    
+    # Build apk.
+      - run: flutter build apk
+    
+    # Upload generated apk to the artifacts.
+      - uses: actions/upload-artifact@v1
+        with:
+          name: release-apk
+          path: build/app/outputs/apk/release/app-release.apk
 
 
   
